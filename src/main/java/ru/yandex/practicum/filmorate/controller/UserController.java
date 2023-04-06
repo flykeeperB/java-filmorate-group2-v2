@@ -26,17 +26,17 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public User findById(@PathVariable Long id) {return userService.getUserById(id);}
+    public User findById(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
 
     @GetMapping("/users/{id}/friends")
-    public List<User> findListFriend(@PathVariable ("id") Long userId) {
+    public List<User> findListFriend(@PathVariable("id") Long userId) {
         return userService.getListFriends(userId);
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    public  List<User> findCommonFriends(
-            @PathVariable ("id") Long userId,
-            @PathVariable ("otherId") Long otherUserId) {
+    public List<User> findCommonFriends(@PathVariable("id") Long userId, @PathVariable("otherId") Long otherUserId) {
         return userService.getListCommonFriends(userId, otherUserId);
     }
 
@@ -103,16 +103,12 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}/friends/{friendId}")
-    public User addFriend(
-            @PathVariable ("id") Long userId,
-            @PathVariable ("friendId") Long friendId) {
+    public User addFriend(@PathVariable("id") Long userId, @PathVariable("friendId") Long friendId) {
         return userService.addFriend(userId, friendId);
     }
 
     @DeleteMapping("/users/{id}/friends/{friendId}")
-    public User deleteFriend(
-            @PathVariable ("id") Long userId,
-            @PathVariable ("friendId") Long friendId) {
+    public User deleteFriend(@PathVariable("id") Long userId, @PathVariable("friendId") Long friendId) {
         return userService.deleteFriend(userId, friendId);
     }
 

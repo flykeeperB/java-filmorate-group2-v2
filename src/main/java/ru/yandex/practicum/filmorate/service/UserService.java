@@ -26,7 +26,6 @@ public class UserService {
 
     public List<User> getListCommonFriends(long userId, long otherUserId) {
         return userStorage.findCommonFriends(userId, otherUserId);
-
     }
 
     public List<User> getListAllUsers() {

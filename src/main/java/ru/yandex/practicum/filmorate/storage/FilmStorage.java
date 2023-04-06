@@ -7,7 +7,7 @@ import java.util.List;
 public interface FilmStorage {
     //методы добавления, удаления и модификации объектов.
     Film addFilm(Film film);
-    
+
     Film updateFilm(long id, Film film);
 
     List<Film> findAllFilms();

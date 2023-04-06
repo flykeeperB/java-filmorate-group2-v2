@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -27,7 +27,8 @@ public class FilmController {
 
     @GetMapping("/films/{id}")
     public Film findById(@PathVariable Long id) {
-        return filmService.getFilmById(id);}
+        return filmService.getFilmById(id);
+    }
 
     @GetMapping("/films/popular")
     public List<Film> findPopularFilms(

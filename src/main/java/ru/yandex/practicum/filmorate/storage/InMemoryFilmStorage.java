@@ -7,7 +7,10 @@ import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.PopularityComparator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -51,7 +54,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film findFilmById(long id) {
-        if(!films.containsKey(id)) {
+        if (!films.containsKey(id)) {
             throw new FilmNotFoundException(String.format("Фильм с id %d не найден", id));
         }
         return films.get(id);
@@ -59,26 +62,15 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-//        List<Film> listFilms = findAllFilms();
-//        listFilms.sort(popularityComparator);
-//
-//        List<Film> popularFilmsList = new ArrayList<>();
-//        for(int i = 0; i < count; i++) {
-//            popularFilmsList.add(listFilms.get(i));
-//        }
-        return findAllFilms().stream()
-                //.sorted(Comparator.comparingLong(f -> f.getLikes().size()))
-                .sorted(popularityComparator)
-                .limit(count)
-                .collect(Collectors.toList());
+        return findAllFilms().stream().sorted(popularityComparator).limit(count).collect(Collectors.toList());
     }
 
     @Override
     public Film deleteLike(long filmId, long userId) {
-        if(!films.containsKey(filmId)) {
+        if (!films.containsKey(filmId)) {
             throw new FilmNotFoundException(String.format("Фильм с id %d не найден", filmId));
         }
-        if(!userStorage.findAllUser().contains(userStorage.findUserById(userId))) {
+        if (!userStorage.findAllUser().contains(userStorage.findUserById(userId))) {
             throw new UserNotFoundException(String.format("Пользователь с id %d не найден", userId));
         }
         Film film = films.get(filmId);
@@ -89,10 +81,10 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addLike(long filmId, long userId) {
-        if(!films.containsKey(filmId)) {
+        if (!films.containsKey(filmId)) {
             throw new FilmNotFoundException(String.format("Фильм с id %d не найден", filmId));
         }
-        if(!userStorage.findAllUser().contains(userStorage.findUserById(userId))) {
+        if (!userStorage.findAllUser().contains(userStorage.findUserById(userId))) {
             throw new UserNotFoundException(String.format("Пользователь с id %d не найден", userId));
         }
         Film film = films.get(filmId);
