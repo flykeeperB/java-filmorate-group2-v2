@@ -3,26 +3,30 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 public class FilmControllerTest {
     FilmController filmController;
-
     Film film;
+
     @BeforeEach
     void beforeEach() {
-        filmController = new FilmController();
-        film = Film.builder()
-                .name("Film")
-                .description("Very interesting film")
-                .releaseDate(LocalDate.now())
-                .duration(30)
-                .build();
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(new InMemoryUserStorage())));
+        film = new Film();
+        film.setName("Film");
+        film.setDescription("Very interesting film");
+        film.setReleaseDate(LocalDate.now());
+        film.setDuration(30);
     }
 
     @Test
@@ -37,7 +41,7 @@ public class FilmControllerTest {
     @Test
     void shouldPostFilmWithDescriptionLonger200() {
         StringBuilder longDescription = new StringBuilder("Very ");
-        for(int i = 1; i < 200; i++) {
+        for (int i = 1; i < 200; i++) {
             String newString = "very ";
             longDescription.append(newString);
         }
@@ -68,3 +72,4 @@ public class FilmControllerTest {
     }
 
 }
+
