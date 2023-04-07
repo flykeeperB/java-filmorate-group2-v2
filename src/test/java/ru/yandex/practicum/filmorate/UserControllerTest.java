@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -10,7 +9,7 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,6 +19,7 @@ public class UserControllerTest {
     UserController userController;
 
     User user;
+
     @BeforeEach
     void beforeEach() {
         userController = new UserController(new UserService(new InMemoryUserStorage()));
@@ -27,7 +27,7 @@ public class UserControllerTest {
         user.setEmail("email@email.ru");
         user.setLogin("Login");
         user.setName("Name");
-        user.setBirthday(LocalDate.of(2000, 1,1));
+        user.setBirthday(LocalDate.of(2000, 1, 1));
 
     }
 
