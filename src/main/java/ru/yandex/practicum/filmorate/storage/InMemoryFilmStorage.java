@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -21,8 +21,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
     private long counterIdFilm = 1;
 
-    @Autowired
-    public InMemoryFilmStorage(UserStorage userStorage) {
+    public InMemoryFilmStorage(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -66,7 +65,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film deleteLike(long filmId, long userId) {
+    public void deleteLike(long filmId, long userId) {
         if (!films.containsKey(filmId)) {
             throw new FilmNotFoundException(String.format("Фильм с id %d не найден", filmId));
         }
@@ -76,11 +75,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         Film film = films.get(filmId);
         film.getLikes().remove(userId);
         films.put(film.getId(), film);
-        return films.get(filmId);
+        films.get(filmId);
     }
 
     @Override
-    public Film addLike(long filmId, long userId) {
+    public void addLike(long filmId, long userId) {
         if (!films.containsKey(filmId)) {
             throw new FilmNotFoundException(String.format("Фильм с id %d не найден", filmId));
         }
@@ -90,7 +89,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         Film film = films.get(filmId);
         film.getLikes().add(userId);
         films.put(film.getId(), film);
-        return films.get(filmId);
+        films.get(filmId);
     }
 
 }
