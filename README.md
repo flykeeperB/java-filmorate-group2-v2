@@ -2,7 +2,6 @@
 
 ## ER-диаграма базы данных
 
-![диаграма БД](https://user-images.githubusercontent.com/118027659/234253910-fa5df983-21f5-4d09-97e7-e3aa6be6171f.png)
 
 
 ## Примеры запросов:
