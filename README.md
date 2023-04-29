@@ -2,7 +2,7 @@
 
 ## ER-диаграма базы данных
 
-![diagram] (src/main/resources/диаграма БД.png)
+![diagram] (src/main/resources/BD.png)
 
 ## Примеры запросов:
 
