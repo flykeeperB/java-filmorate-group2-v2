@@ -2,7 +2,7 @@
 
 ## ER-диаграма базы данных
 
-![diagram] (src/main/resources/BD.png)
+![diagram] (https://github.com/alisilakg/java-filmorate/blob/add-database/src/main/resources/BD.png)
 
 ## Примеры запросов:
 
