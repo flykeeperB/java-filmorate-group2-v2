@@ -2,11 +2,7 @@
 
 ## ER-диаграма базы данных
 
-<<<<<<< HEAD
-![diagram] (src/main/resources/BD.png)
-=======
 ![diagram](src/main/resources/BD.png)
->>>>>>> 16a435f (11 тз : вариант 2)
 
 ## Примеры запросов:
 
