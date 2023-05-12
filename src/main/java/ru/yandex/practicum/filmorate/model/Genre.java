@@ -9,6 +9,7 @@ import java.util.Objects;
 public class Genre {
     long id;
     String name;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -16,6 +17,7 @@ public class Genre {
         Genre genre = (Genre) o;
         return id == genre.id;
     }
+
     @Override
     public int hashCode() {
         return Objects.hash(id);
