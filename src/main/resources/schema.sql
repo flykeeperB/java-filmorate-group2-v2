@@ -1,18 +1,20 @@
-create table IF NOT EXISTS LIST_OF_GENRES
+CREATE TABLE IF NOT EXISTS LIST_OF_GENRES
 (
     GENRE_ID   INTEGER auto_increment,
     GENRE_NAME CHARACTER VARYING not null,
     constraint LIST_OF_GENRES_PK
         primary key (GENRE_ID)
 );
-create table IF NOT EXISTS LIST_OF_MPAS
+
+CREATE TABLE IF NOT EXISTS LIST_OF_MPAS
 (
     MPA_ID   INTEGER not null,
     MPA_NAME CHARACTER VARYING not null,
     constraint LIST_OF_MPAS_PK
         primary key (MPA_ID)
 );
-create table IF NOT EXISTS FILMS
+
+CREATE TABLE IF NOT EXISTS FILMS
 (
     FILM_ID      INTEGER auto_increment,
     FILM_NAME    CHARACTER VARYING      not null,
@@ -25,7 +27,8 @@ create table IF NOT EXISTS FILMS
     constraint FILMS_LIST_OF_MPAS_MPA_ID_FK
         foreign key (MPA_ID) references LIST_OF_MPAS
 );
-create table IF NOT EXISTS GENRES
+
+CREATE TABLE IF NOT EXISTS GENRES
 (
     FILM_ID  int not null,
     GENRE_ID int not null,
@@ -36,7 +39,8 @@ create table IF NOT EXISTS GENRES
     constraint GENRES_LIST_OF_GENRES_GENRE_ID_FK
         foreign key (GENRE_ID) references LIST_OF_GENRES
 );
-create table IF NOT EXISTS USERS
+
+CREATE TABLE IF NOT EXISTS USERS
 (
     USER_ID      INTEGER auto_increment,
     EMAIL        CHARACTER VARYING      not null,
@@ -46,7 +50,8 @@ create table IF NOT EXISTS USERS
     constraint USERS_PK
         primary key (USER_ID)
 );
-create table IF NOT EXISTS LIKES
+
+CREATE TABLE IF NOT EXISTS LIKES
 (
     FILM_ID INTEGER not null,
     USER_ID INTEGER not null,
@@ -57,7 +62,8 @@ create table IF NOT EXISTS LIKES
     constraint LIKES_USERS_USER_ID_FK
         foreign key (USER_ID) references USERS
 );
-create table IF NOT EXISTS FRIENDSHIP
+
+CREATE TABLE IF NOT EXISTS FRIENDSHIP
 (
     USER1_ID  INTEGER           not null,
     USER2_ID  INTEGER           not null,
@@ -68,4 +74,34 @@ create table IF NOT EXISTS FRIENDSHIP
         foreign key (USER1_ID) references USERS,
     constraint FRIENDSHIP_USERS_USER2_ID_FK_2
         foreign key (USER2_ID) references USERS
+);
+
+CREATE TABLE IF NOT EXISTS REVIEWS
+(
+    REVIEW_ID   INTEGER auto_increment,
+    USER_ID     INTEGER REFERENCES USERS (USER_ID) NOT NULL ,
+    FILM_ID     INTEGER REFERENCES FILMS (FILM_ID) NOT NULL ,
+    CONTENT     CHARACTER VARYING(200) NOT NULL,
+    IS_POSITIVE BOOLEAN,
+    USEFUL   INTEGER DEFAULT 0,
+    constraint REVIEWS_PK
+        primary key (REVIEW_ID),
+    constraint REVIEWS_FILM_ID_FK
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
+    constraint REVIEWS_USER_ID_FK
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
+
+);
+
+CREATE TABLE IF NOT EXISTS LIKES_REVIEWS
+(
+    REVIEW_ID   INTEGER not null,
+    USER_ID     INTEGER not null,
+    EVAL        SMALLINT not null,
+    constraint LIKES_REVIEWS_PK
+        primary key (REVIEW_ID, USER_ID),
+    constraint LIKES_REVIEWS_REVIEW_ID_FK
+        foreign key (REVIEW_ID) references REVIEWS ON DELETE CASCADE,
+    constraint LIKES_REVIEWS_USER_ID_FK
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
 );

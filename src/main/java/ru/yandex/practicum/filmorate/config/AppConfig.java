@@ -8,7 +8,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 
 
-@Configuration
+//@Configuration
 public class AppConfig {
     public static final String JDBC_URL = "jdbc:h2:file:./db/filmorate";
     public static final String JDBC_USERNAME = "sa";
