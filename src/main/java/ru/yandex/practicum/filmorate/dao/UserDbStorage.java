@@ -22,6 +22,8 @@ import java.util.Map;
 @Repository
 public class UserDbStorage implements UserStorage {
 
+    public static final String FIND_USER_BY_ID_IN_TABLE_SQL = "SELECT USER_ID FROM USERS WHERE USER_ID=?";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -50,9 +52,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User updateUser(long id, User user) {
         try {
-            String sql = "SELECT USER_ID FROM USERS WHERE USER_ID=?";
             boolean exists = false;
-            int count = jdbcTemplate.queryForObject(sql, new Object[]{id}, Integer.class);
+            int count = jdbcTemplate.queryForObject(FIND_USER_BY_ID_IN_TABLE_SQL, new Object[]{id}, Integer.class);
             exists = count > 0;
 
             if (exists) {
@@ -100,10 +101,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void addFriend(long userId, long friendId) {
         try {
-            String sql = "SELECT USER_ID FROM USERS WHERE USER_ID=?";
             boolean exists = false;
-            //int count = jdbcTemplate.queryForObject(sql, new Object[] {userId}, Integer.class);
-            int count2 = jdbcTemplate.queryForObject(sql, new Object[]{friendId}, Integer.class);
+            int count2 = jdbcTemplate.queryForObject(FIND_USER_BY_ID_IN_TABLE_SQL, new Object[]{friendId}, Integer.class);
             exists = count2 > 0;
 
             if (exists) {

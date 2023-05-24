@@ -16,6 +16,8 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
 
+import static ru.yandex.practicum.filmorate.dao.UserDbStorage.FIND_USER_BY_ID_IN_TABLE_SQL;
+
 //класс DAO - объект доступа к данным. Необходимо написать
 // соответствующие мапперы и методы, позволяющие сохранять
 // фильмы в БД и получать их из неё
@@ -23,9 +25,12 @@ import java.util.*;
 @Component("filmDbStorage")
 @Repository
 public class FilmDbStorage implements FilmStorage {
+    static public final String FIND_FILM_BY_ID_IN_TABLE = "SELECT FILM_ID FROM FILMS WHERE FILM_ID=?";
+    static public final String GET_FILMS_FROM_TABLE = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
+                    + "FROM FILMS AS f LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
+                + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID "
+                + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID ";
     private final JdbcTemplate jdbcTemplate;
-//    @Autowired
-//    private final FilmExtractor filmExtractor;
 
     @Autowired
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
@@ -73,7 +78,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        SimpleJdbcInsert insertIntoFilm = new SimpleJdbcInsert(jdbcTemplate).withTableName("FILMS").usingGeneratedKeyColumns("FILM_ID");
+        SimpleJdbcInsert insertIntoFilm = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("FILMS")
+                .usingGeneratedKeyColumns("FILM_ID");
         final Map<String, Object> parameters = new HashMap<>();
         parameters.put("FILM_NAME", film.getName());
         parameters.put("DESCRIPTION", film.getDescription());
@@ -103,16 +110,21 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film updateFilm(long id, Film film) {
         try {
-            String sql = "SELECT FILM_ID FROM FILMS WHERE FILM_ID=?";
             boolean exists = false;
-            int count = jdbcTemplate.queryForObject(sql, new Object[]{id}, Integer.class);
+            int count = jdbcTemplate.queryForObject(FIND_FILM_BY_ID_IN_TABLE, new Object[]{id}, Integer.class);
             exists = count > 0;
 
             if (exists) {
-                String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? " + "WHERE FILM_ID=?";
+                String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? "
+                        + "WHERE FILM_ID=?";
 
-                jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(),
-                        //film.getDirector().getId(),
+                jdbcTemplate.update(
+                        sqlQuery,
+                        film.getName(),
+                        film.getDescription(),
+                        film.getReleaseDate(),
+                        film.getDuration(),
+                        film.getMpa().getId(),
                         id);
 
                 deleteGenre(film.getId());
@@ -141,10 +153,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> findAllFilms() {
-        Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query("SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
-                + "FROM FILMS AS f LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
-                + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID "
-                + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID;", new FilmExtractor());
+        Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(GET_FILMS_FROM_TABLE, new FilmExtractor());
 
         String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
                 + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
@@ -177,18 +186,13 @@ public class FilmDbStorage implements FilmStorage {
     public Film findFilmById(long id) {
         Film film = new Film();
         try {
-            String sql = "SELECT FILM_ID FROM FILMS WHERE FILM_ID=?";
             boolean exists = false;
-            int count = jdbcTemplate.queryForObject(sql, new Object[]{id}, Integer.class);
+            int count = jdbcTemplate.queryForObject(FIND_FILM_BY_ID_IN_TABLE, new Object[]{id}, Integer.class);
             exists = count > 0;
 
             if (exists) {
                 Map<Film, List<Genre>> filmWithGenre = jdbcTemplate.query(
-                        "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
-                                + "FROM FILMS AS f "
-                                + "LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
-                                + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID "
-                                + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID "
+                        GET_FILMS_FROM_TABLE
                                 + "WHERE f.FILM_ID=?;", new Object[]{id}, new FilmExtractor());
 
                 String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
@@ -223,12 +227,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count) {
         Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(
-                "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, l.GENRE_ID, l.GENRE_NAME"
-                        + ", m.MPA_ID, m.MPA_NAME\n"
-                        + "FROM FILMS AS f\n"
-                        + "LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID\n"
-                        + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID\n"
-                        + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID\n"
+                GET_FILMS_FROM_TABLE
                         + "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes\n"
                         + "ON f.FILM_ID=likes.FILM_ID ORDER BY likes.COUNT_LIKES DESC LIMIT "
                         + count, new FilmExtractor());
@@ -251,9 +250,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void deleteLike(long filmId, long userId) {
         try {
-            String sql = "SELECT USER_ID FROM USERS WHERE USER_ID=?";
             boolean exists = false;
-            int count = jdbcTemplate.queryForObject(sql, new Object[]{userId}, Integer.class);
+            int count = jdbcTemplate.queryForObject(FIND_USER_BY_ID_IN_TABLE_SQL, new Object[]{userId}, Integer.class);
             exists = count > 0;
 
             if (exists) {
@@ -270,4 +268,5 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
     }
+
 }

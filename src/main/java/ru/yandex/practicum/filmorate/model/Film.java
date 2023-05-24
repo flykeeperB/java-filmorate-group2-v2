@@ -8,7 +8,10 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
 
 @Data
 public class Film {
@@ -32,8 +35,6 @@ public class Film {
     private Set<Director> directors = new HashSet<>();
     @JsonIgnore
     private Set<Long> likes = new HashSet<>();
-//    @JsonIgnore
-//    private Long idOfDirectors;
 
     public Film() {
     }
@@ -68,4 +69,5 @@ public class Film {
     public int hashCode() {
         return Objects.hash(id);
     }
+
 }
