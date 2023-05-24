@@ -55,16 +55,19 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review add(Review review) {
         validateId(review.getUserId());
         validateId(review.getFilmId());
-        log.info("public Review add(Review review) "+review);
+
         SimpleJdbcInsert insertRequest = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("REVIEWS")
                 .usingGeneratedKeyColumns("REVIEW_ID");
+
         final Map<String, Object> parameters = new HashMap<>();
+
         parameters.put("USER_ID", review.getUserId());
         parameters.put("FILM_ID", review.getFilmId());
         parameters.put("CONTENT", review.getContent());
         parameters.put("IS_POSITIVE", review.getIsPositive());
-        //USEFUL по умолчанию равен 0
+        parameters.put("USEFUL", 0);
+
         try {
             Number newId = insertRequest.executeAndReturnKey(parameters);
             log.info("Добавлен отзыв, id=" + newId.toString());
@@ -78,7 +81,9 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public Review get(Long id) {
         validateId(id);
+
         String query = getBaseSelectSQL() + " WHERE REVIEW_ID=?";
+
         try {
             return jdbcTemplate.queryForObject(query, reviewMapper, id);
         } catch (EmptyResultDataAccessException e) {
@@ -89,21 +94,24 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public List<Review> getAll(Long limit) {
         String query = getBaseSelectSQL() +
-                " ORDER BY USEFUL DESC";
+                " ORDER BY cast(USEFUL AS INT) DESC";
+
         if (limit != null) {
             query += " LIMIT " + limit;
         }
-        log.info(query);
+
         return jdbcTemplate.query(query, reviewMapper);
     }
 
     @Override
     public Review update(Review review) {
         validateId(review.getReviewId());
+
         String query = "UPDATE REVIEWS SET " +
                 "CONTENT=?, " +
                 "IS_POSITIVE=? " +
                 "WHERE FILM_ID=?";
+
         try {
             int status = jdbcTemplate.update(query,
                     review.getContent(),
@@ -125,11 +133,14 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public List<Review> getByFilmId(Long id, Long limitCount) {
         validateId(id);
-        String query = getBaseSelectSQL() + " WHERE FILM_ID=?";
+
+        String query = getBaseSelectSQL() + " WHERE FILM_ID=?" +
+                " ORDER BY USEFUL DESC";
+
         if (limitCount != null) {
             query += " LIMIT " + limitCount;
         }
-        log.info(query);
+
         try {
             return jdbcTemplate.query(query, reviewMapper, id);
         } catch (EmptyResultDataAccessException e) {
@@ -140,7 +151,9 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void delete(Long id) {
         validateId(id);
-        String query = "DELETE FROM REVIEWS WHERE FILM_ID=?";
+
+        String query = "DELETE FROM REVIEWS WHERE REVIEW_ID=?";
+
         try {
             int rows = jdbcTemplate.update(query, id);
             if (rows > 0) {
