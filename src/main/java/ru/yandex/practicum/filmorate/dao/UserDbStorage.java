@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
@@ -64,24 +63,6 @@ public class UserDbStorage implements UserStorage {
                     user.getBirthday(),
                     userId);
         }
-//        }
-//        try {
-//            boolean exists = false;
-//            int count = jdbcTemplate.queryForObject(FIND_USER_BY_ID_IN_TABLE_SQL, new Object[]{id}, Integer.class);
-//            exists = count > 0;
-//
-//            if (exists) {
-//                String sqlQuery = "UPDATE USERS SET EMAIL=?, LOGIN=?, USER_NAME=?, BIRTHDAY=? WHERE USER_ID=?";
-//                jdbcTemplate.update(sqlQuery,
-//                        user.getEmail(),
-//                        user.getLogin(),
-//                        user.getName(),
-//                        user.getBirthday(),
-//                        id);
-//            }
-//        } catch (EmptyResultDataAccessException e) {
-//            throw new UserNotFoundException("Такого пользователя нет");
-//        }
         return user;
     }
 
@@ -102,21 +83,6 @@ public class UserDbStorage implements UserStorage {
             user = jdbcTemplate.query("SELECT * FROM USERS WHERE USER_ID=?", new Object[]{userId}, userMapper)
                     .stream().findAny().orElse(null);
         }
-//        User user = new User();
-//        try {
-//            String sql = "SELECT USER_ID FROM USERS WHERE USER_ID=?";
-//            boolean exists = false;
-//            int count = jdbcTemplate.queryForObject(sql, new Object[]{id}, Integer.class);
-//            exists = count > 0;
-//
-//            if (exists) {
-//                user = jdbcTemplate.query("SELECT * FROM USERS WHERE USER_ID=?", new Object[]{id}, userMapper)
-//                        .stream().findAny().orElse(null);
-//            }
-//
-//        } catch (EmptyResultDataAccessException e) {
-//            throw new UserNotFoundException("Такого пользователя нет");
-//        }
         return user;
     }
 
@@ -140,28 +106,6 @@ public class UserDbStorage implements UserStorage {
                 jdbcTemplate.update("UPDATE FRIENDSHIP SET STATUS = ? WHERE USER2_ID=? AND USER1_ID=?", "confirmed", userId, friendId);
             }
         }
-//        try {
-//            boolean exists = false;
-//            int count2 = jdbcTemplate.queryForObject(FIND_USER_BY_ID_IN_TABLE_SQL, new Object[]{friendId}, Integer.class);
-//            exists = count2 > 0;
-//
-//            if (exists) {
-//                String sqlQuery = "SELECT count(*) FROM FRIENDSHIP where USER1_ID=? AND USER2_ID=?";
-//                boolean exists2 = false;
-//                int count3 = jdbcTemplate.queryForObject(sqlQuery, new Object[]{userId, friendId}, Integer.class);
-//                int count4 = jdbcTemplate.queryForObject(sqlQuery, new Object[]{friendId, userId}, Integer.class);
-//                exists2 = count3 > 0 || count4 > 0;
-//                if (exists2 == false) {
-//                    jdbcTemplate.update("INSERT INTO FRIENDSHIP (USER1_ID, USER2_ID, STATUS) VALUES (?, ?, ?)", friendId, userId, "unconfirmed");
-//                } else if (count3 > 0) {
-//                    jdbcTemplate.update("UPDATE FRIENDSHIP SET STATUS = ? WHERE USER2_ID=? AND USER1_ID=?", "confirmed", friendId, userId);
-//                } else if (count4 > 0) {
-//                    jdbcTemplate.update("UPDATE FRIENDSHIP SET STATUS = ? WHERE USER2_ID=? AND USER1_ID=?", "confirmed", userId, friendId);
-//                }
-//            }
-//        } catch (EmptyResultDataAccessException e) {
-//            throw new UserNotFoundException("Такого пользователя нет");
-//        }
     }
 
     @Override
