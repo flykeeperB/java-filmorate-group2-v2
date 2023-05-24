@@ -43,7 +43,7 @@ create table IF NOT EXISTS GENRES
     constraint GENRES_LIST_OF_GENRES_GENRE_ID_FK
         foreign key (GENRE_ID) references LIST_OF_GENRES
 );
-create table DIRECTORS
+create table IF NOT EXISTS DIRECTORS
 (
     DIRECTOR_ID INTEGER not null,
     FILM_ID     INTEGER not null,

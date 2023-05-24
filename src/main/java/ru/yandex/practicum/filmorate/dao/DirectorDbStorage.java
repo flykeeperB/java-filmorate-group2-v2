@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -15,7 +14,7 @@ import java.util.*;
 
 @Repository
 public class DirectorDbStorage implements DirectorStorage {
-    static public final String FIND_DIRECTOR_IN_TABLE_SQL = "SELECT DIRECTOR_ID FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
+    static public final String FIND_DIRECTOR_IN_TABLE_SQL = "SELECT * FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -34,17 +33,9 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Director findDirectorById(long directorId) {
-        Director director = new Director();
-        try {
-            boolean exists = false;
-            int count = jdbcTemplate.queryForObject(FIND_DIRECTOR_IN_TABLE_SQL, new Object[]{directorId}, Integer.class);
-            exists = count > 0;
-
-            if (exists) {
-                director = jdbcTemplate.query("SELECT * FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?"
-                        , new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
-            }
-        } catch (EmptyResultDataAccessException e) {
+        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL
+                , new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
+        if(director == null) {
             throw new DirectorNotFoundException("Режиссёра c таким id нет");
         }
         return director;
@@ -64,20 +55,15 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public Director updateDirector(long id, Director director) {
-        try {
-            boolean exists = false;
-            int count = jdbcTemplate.queryForObject(FIND_DIRECTOR_IN_TABLE_SQL, new Object[]{id}, Integer.class);
-            exists = count > 0;
-
-            if (exists) {
-                String sqlQuery = "UPDATE LIST_OF_DIRECTORS SET DIRECTOR_NAME=? WHERE DIRECTOR_ID=?";
-                jdbcTemplate.update(sqlQuery, director.getName(), id);
-            }
-        } catch (EmptyResultDataAccessException e) {
-            throw new DirectorNotFoundException("Такого режиссёра нет");
+    public Director updateDirector(long directorId, Director director) {
+        Director directorExist = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL
+                , new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
+        if(directorExist == null) {
+            throw new DirectorNotFoundException("Режиссёра c таким id нет");
+        } else {
+            String sqlQuery = "UPDATE LIST_OF_DIRECTORS SET DIRECTOR_NAME=? WHERE DIRECTOR_ID=?";
+            jdbcTemplate.update(sqlQuery, director.getName(), directorId);
         }
-
         return director;
     }
 
@@ -93,112 +79,100 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
 
-    public List<Film> getListOfFilmsByDirectorSortByYear(long id) {
+    public List<Film> getListOfFilmsByDirectorSortByYear(long directorId) {
         List<Film> filmsList = new ArrayList<>();
-        try {
-            boolean exists = false;
-            int count = jdbcTemplate.queryForObject(FIND_DIRECTOR_IN_TABLE_SQL, new Object[]{id}, Integer.class);
-            exists = count > 0;
-
-            if (exists) {
-                String sql = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME " +
-                        "FROM DIRECTORS AS d " +
-                        "LEFT JOIN FILMS AS f on d.FILM_ID = f.FILM_ID " +
-                        "LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID " +
-                        "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID " +
-                        "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID " +
-                        "WHERE d.DIRECTOR_ID=? " +
-                        "ORDER BY f.RELEASE_DATE";
-                Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(sql, new Object[]{id}, new FilmExtractor());
-
-                String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
-                        + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
-
-                Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
-
-                Set<Film> films = new TreeSet(new Comparator<Film>() {
-                    @Override
-                    public int compare(Film o1, Film o2) {
-                        return o1.getReleaseDate().compareTo(o2.getReleaseDate());
-                    }
-                });
-                for (Film film : filmsWithGenre.keySet()) {
-                    Set<Genre> genres = new HashSet<>();
-                    for (Genre genre : filmsWithGenre.get(film)) {
-                        if (genre.getId() != 0) {
-                            genres.add(genre);
-                        }
-                    }
-                    film.setGenres(genres);
-
-                    Set<Director> directors = new HashSet<>();
-                    if(directorsAndFilms.containsKey(film.getId())) {
-                        directors = directorsAndFilms.get(film.getId());
-                    }
-                    film.setDirectors(directors);
-
-                    films.add(film);
-                }
-                filmsList.addAll(films);
-
-            }
-
-        } catch (EmptyResultDataAccessException e) {
+        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL
+                , new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
+        if(director == null) {
             throw new DirectorNotFoundException("Режиссёра c таким id нет");
-        }
+        } else {
+            String sql = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME " +
+                    "FROM DIRECTORS AS d " +
+                    "LEFT JOIN FILMS AS f on d.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID " +
+                    "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID " +
+                    "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID " +
+                    "WHERE d.DIRECTOR_ID=? " +
+                    "ORDER BY f.RELEASE_DATE";
+            Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(sql, new Object[]{directorId}, new FilmExtractor());
 
+            String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
+                    + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
+
+            Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
+
+            Set<Film> films = new TreeSet(new Comparator<Film>() {
+                @Override
+                public int compare(Film o1, Film o2) {
+                    return o1.getReleaseDate().compareTo(o2.getReleaseDate());
+                }
+            });
+            for (Film film : filmsWithGenre.keySet()) {
+                Set<Genre> genres = new HashSet<>();
+                for (Genre genre : filmsWithGenre.get(film)) {
+                    if (genre.getId() != 0) {
+                        genres.add(genre);
+                    }
+                }
+                film.setGenres(genres);
+
+                Set<Director> directors = new HashSet<>();
+                if(directorsAndFilms.containsKey(film.getId())) {
+                    directors = directorsAndFilms.get(film.getId());
+                }
+                film.setDirectors(directors);
+
+                films.add(film);
+            }
+            filmsList.addAll(films);
+        }
         return filmsList;
     }
 
     @Override
-    public List<Film> getListOfFilmsByDirectorSortByLikes(long id) {
+    public List<Film> getListOfFilmsByDirectorSortByLikes(long directorId) {
         List<Film> films = new ArrayList<>();
-        try {
-            boolean exists = false;
-            int count = jdbcTemplate.queryForObject(FIND_DIRECTOR_IN_TABLE_SQL, new Object[]{id}, Integer.class);
-            exists = count > 0;
-
-            if (exists) {
-                String sql = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME, likes.COUNT_LIKES " +
-                        "FROM DIRECTORS AS d " +
-                        "LEFT JOIN FILMS AS f on f.FILM_ID = d.FILM_ID " +
-                        "LEFT JOIN GENRES AS g ON d.FILM_ID = g.FILM_ID " +
-                        "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID " +
-                        "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID " +
-                        "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes " +
-                        "on f.FILM_ID = likes.FILM_ID " +
-                        "WHERE d.DIRECTOR_ID=? " +
-                        "ORDER BY likes.COUNT_LIKES DESC;";
-                Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(sql, new Object[]{id}, new FilmExtractor());
-
-                String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
-                        + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
-
-                Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
-
-                for (Film film : filmsWithGenre.keySet()) {
-                    Set<Genre> genres = new HashSet<>();
-                    for (Genre genre : filmsWithGenre.get(film)) {
-                        if (genre.getId() != 0) {
-                            genres.add(genre);
-                        }
-                    }
-                    film.setGenres(genres);
-
-                    Set<Director> directors = new HashSet<>();
-                    if (directorsAndFilms.containsKey(film.getId())) {
-                        directors = directorsAndFilms.get(film.getId());
-                    }
-                    film.setDirectors(directors);
-
-                    films.add(film);
-                }
-            }
-        } catch (EmptyResultDataAccessException e) {
+        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL
+                , new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
+        if (director == null) {
             throw new DirectorNotFoundException("Режиссёра c таким id нет");
-        }
+        } else {
+            String sql = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME, likes.COUNT_LIKES " +
+                    "FROM DIRECTORS AS d " +
+                    "LEFT JOIN FILMS AS f on f.FILM_ID = d.FILM_ID " +
+                    "LEFT JOIN GENRES AS g ON d.FILM_ID = g.FILM_ID " +
+                    "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID " +
+                    "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID " +
+                    "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes " +
+                    "on f.FILM_ID = likes.FILM_ID " +
+                    "WHERE d.DIRECTOR_ID=? " +
+                    "ORDER BY likes.COUNT_LIKES DESC;";
+            Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(sql, new Object[]{directorId}, new FilmExtractor());
 
-        return films;
+            String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
+                    + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
+
+            Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
+
+            for (Film film : filmsWithGenre.keySet()) {
+                Set<Genre> genres = new HashSet<>();
+                for (Genre genre : filmsWithGenre.get(film)) {
+                    if (genre.getId() != 0) {
+                        genres.add(genre);
+                    }
+                }
+                film.setGenres(genres);
+
+                Set<Director> directors = new HashSet<>();
+                if (directorsAndFilms.containsKey(film.getId())) {
+                    directors = directorsAndFilms.get(film.getId());
+                }
+                film.setDirectors(directors);
+
+                films.add(film);
+            }
+            return films;
+        }
     }
 
 }

@@ -7,11 +7,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.*;
@@ -25,8 +27,8 @@ import static ru.yandex.practicum.filmorate.dao.UserDbStorage.FIND_USER_BY_ID_IN
 @Component("filmDbStorage")
 @Repository
 public class FilmDbStorage implements FilmStorage {
-    static public final String FIND_FILM_BY_ID_IN_TABLE = "SELECT FILM_ID FROM FILMS WHERE FILM_ID=?";
-    static public final String GET_FILMS_FROM_TABLE = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
+    static public final String FIND_FILM_BY_ID_IN_TABLE_SQL = "SELECT * FROM FILMS WHERE FILM_ID=?";
+    static public final String GET_FILMS_FROM_TABLE_SQL = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
                     + "FROM FILMS AS f LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
                 + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID "
                 + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID ";
@@ -52,7 +54,6 @@ public class FilmDbStorage implements FilmStorage {
 
         jdbcTemplate.update(sqlQuery, idFilm);
     }
-
 
     private void addDirectors(long idDirector, long idFilm) {
         try {
@@ -108,52 +109,88 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film updateFilm(long id, Film film) {
-        try {
-            boolean exists = false;
-            int count = jdbcTemplate.queryForObject(FIND_FILM_BY_ID_IN_TABLE, new Object[]{id}, Integer.class);
-            exists = count > 0;
+    public Film updateFilm(long filmId, Film film) {
+        Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL
+                , new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
+        if(filmExist == null) {
+            throw new FilmNotFoundException("Фильма c таким id нет");
+        } else {
+            String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? "
+                    + "WHERE FILM_ID=?";
 
-            if (exists) {
-                String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? "
-                        + "WHERE FILM_ID=?";
+            jdbcTemplate.update(
+                    sqlQuery,
+                    film.getName(),
+                    film.getDescription(),
+                    film.getReleaseDate(),
+                    film.getDuration(),
+                    film.getMpa().getId(),
+                    filmId);
 
-                jdbcTemplate.update(
-                        sqlQuery,
-                        film.getName(),
-                        film.getDescription(),
-                        film.getReleaseDate(),
-                        film.getDuration(),
-                        film.getMpa().getId(),
-                        id);
+            deleteGenre(film.getId());
 
-                deleteGenre(film.getId());
-
-                Set<Genre> genres = film.getGenres();
-                if (!genres.equals(new HashSet<>())) {
-                    for (Genre genre : genres) {
-                        addGenres(genre.getId(), film.getId());
-                    }
-                }
-
-                deleteDirectors(film.getId());
-
-                Set<Director> directors = film.getDirectors();
-                if (!directors.equals(new HashSet<>())) {
-                    for (Director director : directors) {
-                        addDirectors(director.getId(), film.getId());
-                    }
+            Set<Genre> genres = film.getGenres();
+            if (!genres.equals(new HashSet<>())) {
+                for (Genre genre : genres) {
+                    addGenres(genre.getId(), film.getId());
                 }
             }
-        } catch (EmptyResultDataAccessException e) {
-            throw new FilmNotFoundException("Такого фильма не существует");
+
+            deleteDirectors(film.getId());
+
+            Set<Director> directors = film.getDirectors();
+            if (!directors.equals(new HashSet<>())) {
+                for (Director director : directors) {
+                    addDirectors(director.getId(), film.getId());
+                }
+            }
         }
         return film;
+//        try {
+//            boolean exists = false;
+//            int count = jdbcTemplate.queryForObject(FIND_FILM_BY_ID_IN_TABLE, new Object[]{id}, Integer.class);
+//            exists = count > 0;
+//
+//            if (exists) {
+//                String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? "
+//                        + "WHERE FILM_ID=?";
+//
+//                jdbcTemplate.update(
+//                        sqlQuery,
+//                        film.getName(),
+//                        film.getDescription(),
+//                        film.getReleaseDate(),
+//                        film.getDuration(),
+//                        film.getMpa().getId(),
+//                        id);
+//
+//                deleteGenre(film.getId());
+//
+//                Set<Genre> genres = film.getGenres();
+//                if (!genres.equals(new HashSet<>())) {
+//                    for (Genre genre : genres) {
+//                        addGenres(genre.getId(), film.getId());
+//                    }
+//                }
+//
+//                deleteDirectors(film.getId());
+//
+//                Set<Director> directors = film.getDirectors();
+//                if (!directors.equals(new HashSet<>())) {
+//                    for (Director director : directors) {
+//                        addDirectors(director.getId(), film.getId());
+//                    }
+//                }
+//            }
+//        } catch (EmptyResultDataAccessException e) {
+//            throw new FilmNotFoundException("Такого фильма не существует");
+//        }
+//        return film;
     }
 
     @Override
     public List<Film> findAllFilms() {
-        Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(GET_FILMS_FROM_TABLE, new FilmExtractor());
+        Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(GET_FILMS_FROM_TABLE_SQL, new FilmExtractor());
 
         String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
                 + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
@@ -183,52 +220,85 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film findFilmById(long id) {
+    public Film findFilmById(long filmId) {
         Film film = new Film();
-        try {
-            boolean exists = false;
-            int count = jdbcTemplate.queryForObject(FIND_FILM_BY_ID_IN_TABLE, new Object[]{id}, Integer.class);
-            exists = count > 0;
+        Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL
+                , new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
+        if (filmExist == null) {
+            throw new FilmNotFoundException("Фильма c таким id нет");
+        } else {
+            Map<Film, List<Genre>> filmWithGenre = jdbcTemplate.query(
+                    GET_FILMS_FROM_TABLE_SQL
+                            + "WHERE f.FILM_ID=?;", new Object[]{filmId}, new FilmExtractor());
 
-            if (exists) {
-                Map<Film, List<Genre>> filmWithGenre = jdbcTemplate.query(
-                        GET_FILMS_FROM_TABLE
-                                + "WHERE f.FILM_ID=?;", new Object[]{id}, new FilmExtractor());
+            String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
+                    + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
 
-                String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
-                        + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
+            Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
 
-                Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
-
-                for (Film f : filmWithGenre.keySet()) {
-                    Set<Genre> genres = new HashSet<>();
-                    for (Genre genre : filmWithGenre.get(f)) {
-                        if (genre.getId() != 0) {
-                            genres.add(genre);
-                        }
+            for (Film f : filmWithGenre.keySet()) {
+                Set<Genre> genres = new HashSet<>();
+                for (Genre genre : filmWithGenre.get(f)) {
+                    if (genre.getId() != 0) {
+                        genres.add(genre);
                     }
-                    f.setGenres(genres);
-
-                    Set<Director> directors = new HashSet<>();
-                    if(directorsAndFilms.containsKey(id)) {
-                        directors = directorsAndFilms.get(id);
-                    }
-                    f.setDirectors(directors);
-
-                    film = f;
                 }
+                f.setGenres(genres);
+
+                Set<Director> directors = new HashSet<>();
+                if (directorsAndFilms.containsKey(filmId)) {
+                    directors = directorsAndFilms.get(filmId);
+                }
+                f.setDirectors(directors);
+
+                film = f;
             }
-        } catch (EmptyResultDataAccessException e) {
-            throw new FilmNotFoundException("Такого фильма не существует");
+//        Film film = new Film();
+//        try {
+//            boolean exists = false;
+//            int count = jdbcTemplate.queryForObject(FIND_FILM_BY_ID_IN_TABLE, new Object[]{id}, Integer.class);
+//            exists = count > 0;
+//
+//            if (exists) {
+//                Map<Film, List<Genre>> filmWithGenre = jdbcTemplate.query(
+//                        GET_FILMS_FROM_TABLE
+//                                + "WHERE f.FILM_ID=?;", new Object[]{id}, new FilmExtractor());
+//
+//                String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
+//                        + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
+//
+//                Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
+//
+//                for (Film f : filmWithGenre.keySet()) {
+//                    Set<Genre> genres = new HashSet<>();
+//                    for (Genre genre : filmWithGenre.get(f)) {
+//                        if (genre.getId() != 0) {
+//                            genres.add(genre);
+//                        }
+//                    }
+//                    f.setGenres(genres);
+//
+//                    Set<Director> directors = new HashSet<>();
+//                    if(directorsAndFilms.containsKey(id)) {
+//                        directors = directorsAndFilms.get(id);
+//                    }
+//                    f.setDirectors(directors);
+//
+//                    film = f;
+//                }
+//            }
+//        } catch (EmptyResultDataAccessException e) {
+//            throw new FilmNotFoundException("Такого фильма не существует");
+//        }
+            return film;
         }
-        return film;
     }
 
     @Override
     public List<Film> getPopularFilms(int count) {
         Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(
-                GET_FILMS_FROM_TABLE
-                        + "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes\n"
+                GET_FILMS_FROM_TABLE_SQL
+                        + "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes "
                         + "ON f.FILM_ID=likes.FILM_ID ORDER BY likes.COUNT_LIKES DESC LIMIT "
                         + count, new FilmExtractor());
         List<Film> films = new ArrayList<>();
@@ -249,18 +319,26 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteLike(long filmId, long userId) {
-        try {
-            boolean exists = false;
-            int count = jdbcTemplate.queryForObject(FIND_USER_BY_ID_IN_TABLE_SQL, new Object[]{userId}, Integer.class);
-            exists = count > 0;
-
-            if (exists) {
-                String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
-                jdbcTemplate.update(sqlQuery, filmId, userId);
-            }
-        } catch (EmptyResultDataAccessException e) {
+        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL
+                , new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
+        if(userExist == null) {
             throw new UserNotFoundException("Такого пользователя нет");
+        } else {
+            String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
+            jdbcTemplate.update(sqlQuery, filmId, userId);
         }
+//        try {
+//            boolean exists = false;
+//            int count = jdbcTemplate.queryForObject(FIND_USER_BY_ID_IN_TABLE_SQL, new Object[]{userId}, Integer.class);
+//            exists = count > 0;
+//
+//            if (exists) {
+//                String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
+//                jdbcTemplate.update(sqlQuery, filmId, userId);
+//            }
+//        } catch (EmptyResultDataAccessException e) {
+//            throw new UserNotFoundException("Такого пользователя нет");
+//        }
     }
 
     @Override
