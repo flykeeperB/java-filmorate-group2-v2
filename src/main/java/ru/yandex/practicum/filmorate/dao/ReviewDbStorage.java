@@ -100,19 +100,23 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public Review update(Review review) {
         validateId(review.getReviewId());
-        String query = "UPDATE FILMS SET" +
+        String query = "UPDATE REVIEWS SET " +
                 "CONTENT=?, " +
-                "IS_POSITIVE=?, " +
+                "IS_POSITIVE=? " +
                 "WHERE FILM_ID=?";
-        int status = jdbcTemplate.update(query,
-                review.getContent(),
-                review.getIsPositive(),
-                review.getReviewId());
+        try {
+            int status = jdbcTemplate.update(query,
+                    review.getContent(),
+                    review.getIsPositive(),
+                    review.getReviewId());
 
-        if (status != 0) {
-            log.info("Запись успешно обновлена ");
-        } else {
-            throw new ReviewNotFoundException("Запись с заданным идентификатором для обновления не найдена.");
+            if (status != 0) {
+                log.info("Запись успешно обновлена ");
+            } else {
+                throw new ReviewNotFoundException("Запись с заданным идентификатором для обновления не найдена.");
+            }
+        } catch (RuntimeException e) {
+            log.error(e.getMessage());
         }
 
         return get(review.getReviewId());
@@ -125,6 +129,7 @@ public class ReviewDbStorage implements ReviewStorage {
         if (limitCount != null) {
             query += " LIMIT " + limitCount;
         }
+        log.info(query);
         try {
             return jdbcTemplate.query(query, reviewMapper, id);
         } catch (EmptyResultDataAccessException e) {
@@ -135,12 +140,16 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void delete(Long id) {
         validateId(id);
-        String query = "DELETE FROM REVIEWS WHERE id=?";
-        int rows = jdbcTemplate.update(query, id);
-        if (rows > 0) {
-            log.info("Запись удалена.");
-        } else {
-            throw new ReviewNotFoundException("Запись не удалена.");
+        String query = "DELETE FROM REVIEWS WHERE FILM_ID=?";
+        try {
+            int rows = jdbcTemplate.update(query, id);
+            if (rows > 0) {
+                log.info("Запись удалена.");
+            } else {
+                throw new ReviewNotFoundException("Запись не удалена.");
+            }
+        } catch (RuntimeException e) {
+            log.info(e.getMessage());
         }
     }
 }

@@ -35,14 +35,14 @@ public class ReviewController {
     }
 
     @GetMapping()
-    public List<Review> getAll(@RequestParam(defaultValue = "-1") Long filmId, @RequestParam(defaultValue = "10") Long limitCount) {
+    public List<Review> getAll(@RequestParam(defaultValue = "-1") Long filmId, @RequestParam(defaultValue = "10") Long count) {
         log.info("GET: /reviews");
         if (filmId < 1) {
             log.info("GET: /reviews all");
-            return new ArrayList<>(service.getAll(limitCount));
+            return new ArrayList<>(service.getAll(count));
         }
         log.info("GET: /reviews byFilmId");
-        return new ArrayList<>(service.getByFilmId(filmId, limitCount));
+        return new ArrayList<>(service.getByFilmId(filmId, count));
     }
 
     @PutMapping

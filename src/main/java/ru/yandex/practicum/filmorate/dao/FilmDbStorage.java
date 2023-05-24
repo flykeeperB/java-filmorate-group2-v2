@@ -174,12 +174,12 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopularFilms(int count) {
         Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(
                 "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, l.GENRE_ID, l.GENRE_NAME"
-                        + ", m.MPA_ID, m.MPA_NAME\n"
-                + "FROM FILMS AS f\n"
-                + "LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID\n"
-                + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID\n"
-                + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID\n"
-                + "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes\n"
+                        + ", m.MPA_ID, m.MPA_NAME "
+                + "FROM FILMS AS f "
+                + "LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
+                + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID "
+                + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID "
+                + "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes "
                 + "ON f.FILM_ID=likes.FILM_ID ORDER BY likes.COUNT_LIKES DESC LIMIT "
                 + count, filmExtractor);
         List<Film> films = new ArrayList<>();

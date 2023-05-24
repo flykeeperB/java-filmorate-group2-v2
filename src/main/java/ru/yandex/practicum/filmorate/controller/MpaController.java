@@ -20,7 +20,7 @@ public class MpaController {
         this.mpaService = mpaService;
     }
 
-    @GetMapping("/mpa")
+    @GetMapping
     public List<Mpa> findAll() {
         return mpaService.getAllMpas();
     }
