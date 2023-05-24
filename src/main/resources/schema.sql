@@ -69,3 +69,37 @@ create table IF NOT EXISTS FRIENDSHIP
     constraint FRIENDSHIP_USERS_USER2_ID_FK_2
         foreign key (USER2_ID) references USERS
 );
+
+create table IF NOT EXISTS EVENT_TYPE
+(
+    TYPE_ID    INTEGER                not null,
+    TYPE_NAME  CHARACTER VARYING      not null,
+    constraint EVENT_TYPE_PK
+        primary key (TYPE_ID)
+);
+
+create table IF NOT EXISTS OPERATION
+(
+    OPERATION_ID    INTEGER                not null,
+    OPERATION_NAME  CHARACTER VARYING      not null,
+    constraint OPERATION_PK
+        primary key (OPERATION_ID)
+);
+
+create table IF NOT EXISTS EVENTS
+(
+    EVENT_ID       INTEGER       auto_increment,
+    TIME_EVENT     TIMESTAMP     not null,
+    USER_ID        INTEGER       not null,
+    TYPE_ID        INTEGER       not null,
+    OPERATION_ID   INTEGER       not null,
+    ENTITY_ID      INTEGER       not null,
+    constraint EVENT_PK
+        primary key (EVENT_ID,USER_ID,TYPE_ID,OPERATION_ID,EVENT_ID),
+    constraint USER_ID_FK
+        foreign key (USER_ID) references USERS,
+    constraint TYPE_ID_FK_2
+        foreign key (TYPE_ID) references EVENT_TYPE,
+    constraint OPERATION_ID_FK
+        foreign key (OPERATION_ID) references OPERATION
+);

@@ -51,5 +51,4 @@ public class ErrorHandler {
     public ErrorResponse handleMpaNotFoundException(final MpaNotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
-
 }

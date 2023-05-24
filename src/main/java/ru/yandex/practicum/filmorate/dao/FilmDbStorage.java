@@ -27,6 +27,9 @@ public class FilmDbStorage implements FilmStorage {
     private FilmExtractor filmExtractor;
 
     @Autowired
+    EventDbStorage eventDbStorage;
+
+    @Autowired
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -209,6 +212,7 @@ public class FilmDbStorage implements FilmStorage {
             if (exists) {
                 String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
                 jdbcTemplate.update(sqlQuery, filmId, userId);
+                eventDbStorage.deleteLike(filmId,userId);
             }
         } catch (EmptyResultDataAccessException e) {
             throw new UserNotFoundException("Такого пользователя нет");
@@ -219,5 +223,6 @@ public class FilmDbStorage implements FilmStorage {
     public void addLike(long filmId, long userId) {
         String sql = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
+        eventDbStorage.addLike(filmId,userId);
     }
 }

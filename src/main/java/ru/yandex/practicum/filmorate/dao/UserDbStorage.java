@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -26,6 +27,9 @@ public class UserDbStorage implements UserStorage {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private EventDbStorage eventDbStorage;
 
     @Autowired
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
@@ -114,10 +118,13 @@ public class UserDbStorage implements UserStorage {
                 exists2 = count3 > 0 || count4 > 0;
                 if (exists2 == false) {
                     jdbcTemplate.update("INSERT INTO FRIENDSHIP (USER1_ID, USER2_ID, STATUS) VALUES (?, ?, ?)", friendId, userId, "unconfirmed");
+                    eventDbStorage.addFriend(userId,friendId);
                 } else if (count3 > 0) {
                     jdbcTemplate.update("UPDATE FRIENDSHIP SET STATUS = ? WHERE USER2_ID=? AND USER1_ID=?", "confirmed", friendId, userId);
+                    eventDbStorage.addFriend(userId,friendId);
                 } else if (count4 > 0) {
                     jdbcTemplate.update("UPDATE FRIENDSHIP SET STATUS = ? WHERE USER2_ID=? AND USER1_ID=?", "confirmed", userId, friendId);
+                    eventDbStorage.addFriend(userId,friendId);
                 }
             }
         } catch (EmptyResultDataAccessException e) {
@@ -129,6 +136,7 @@ public class UserDbStorage implements UserStorage {
     public void deleteFriend(long userId, long friendId) {
         String sql = "DELETE FROM FRIENDSHIP WHERE USER1_ID=? AND USER2_ID=?;";
         jdbcTemplate.update(sql, friendId, userId);
+        eventDbStorage.deleteFriend(userId,friendId);
     }
 
     @Override
@@ -143,5 +151,11 @@ public class UserDbStorage implements UserStorage {
                 "(SELECT * FROM(SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=? " +
                 "UNION ALL SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=?) GROUP BY USER1_ID HAVING COUNT(USER1_ID)=2)";
         return jdbcTemplate.query(sql, new Object[]{userId, otherUserId}, userMapper);
+    }
+
+    @Override
+    public boolean contains(long id) {
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet("select 1 from users where user_id = ?", id);
+        return userRows.next();
     }
 }
