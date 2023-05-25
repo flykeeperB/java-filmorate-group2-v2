@@ -21,7 +21,7 @@ import java.util.Map;
 @Repository
 public class UserDbStorage implements UserStorage {
 
-    public static final String FIND_USER_BY_ID_IN_TABLE_SQL = "SELECT * FROM USERS WHERE USER_ID=?";
+    static final String FIND_USER_BY_ID_IN_TABLE_SQL = "SELECT * FROM USERS WHERE USER_ID=?";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -50,9 +50,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User updateUser(long userId, User user) {
-        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL
-                , new Object[]{userId}, userMapper).stream().findAny().orElse(null);
-        if(userExist == null) {
+        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
+                new Object[]{userId}, userMapper).stream().findAny().orElse(null);
+        if (userExist == null) {
             throw new UserNotFoundException("Такого пользователя нет");
         } else {
             String sqlQuery = "UPDATE USERS SET EMAIL=?, LOGIN=?, USER_NAME=?, BIRTHDAY=? WHERE USER_ID=?";
@@ -75,9 +75,9 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User findUserById(long userId) {
         User user;
-        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL
-                , new Object[]{userId}, userMapper).stream().findAny().orElse(null);
-        if(userExist == null) {
+        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
+                new Object[]{userId}, userMapper).stream().findAny().orElse(null);
+        if (userExist == null) {
             throw new UserNotFoundException("Такого пользователя нет");
         } else {
             user = jdbcTemplate.query("SELECT * FROM USERS WHERE USER_ID=?", new Object[]{userId}, userMapper)
@@ -88,9 +88,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(long userId, long friendId) {
-        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL
-                , new Object[]{friendId}, userMapper).stream().findAny().orElse(null);
-        if(userExist == null) {
+        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
+                new Object[]{friendId}, userMapper).stream().findAny().orElse(null);
+        if (userExist == null) {
             throw new UserNotFoundException("Такого пользователя нет");
         } else {
             String sqlQuery = "SELECT count(*) FROM FRIENDSHIP where USER1_ID=? AND USER2_ID=?";

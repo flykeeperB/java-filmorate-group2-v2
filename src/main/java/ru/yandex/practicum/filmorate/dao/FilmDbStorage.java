@@ -25,8 +25,8 @@ import static ru.yandex.practicum.filmorate.dao.UserDbStorage.FIND_USER_BY_ID_IN
 @Component("filmDbStorage")
 @Repository
 public class FilmDbStorage implements FilmStorage {
-    static public final String FIND_FILM_BY_ID_IN_TABLE_SQL = "SELECT * FROM FILMS WHERE FILM_ID=?";
-    static public final String GET_FILMS_FROM_TABLE_SQL = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
+    static final String FIND_FILM_BY_ID_IN_TABLE_SQL = "SELECT * FROM FILMS WHERE FILM_ID=?";
+    static final String GET_FILMS_FROM_TABLE_SQL = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
                     + "FROM FILMS AS f LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
                 + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID "
                 + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID ";
@@ -108,9 +108,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(long filmId, Film film) {
-        Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL
-                , new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
-        if(filmExist == null) {
+        Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL,
+                new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
+        if (filmExist == null) {
             throw new FilmNotFoundException("Фильма c таким id нет");
         } else {
             String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? "
@@ -166,7 +166,7 @@ public class FilmDbStorage implements FilmStorage {
             film.setGenres(genres);
 
             Set<Director> directors = new HashSet<>();
-            if(directorsAndFilms.containsKey(film.getId())) {
+            if (directorsAndFilms.containsKey(film.getId())) {
                 directors = directorsAndFilms.get(film.getId());
             }
             film.setDirectors(directors);
@@ -180,8 +180,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film findFilmById(long filmId) {
         Film film = new Film();
-        Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL
-                , new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
+        Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL,
+                new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
         if (filmExist == null) {
             throw new FilmNotFoundException("Фильма c таким id нет");
         } else {
@@ -240,9 +240,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteLike(long filmId, long userId) {
-        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL
-                , new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
-        if(userExist == null) {
+        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
+                new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
+        if (userExist == null) {
             throw new UserNotFoundException("Такого пользователя нет");
         } else {
             String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
