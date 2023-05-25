@@ -20,7 +20,7 @@ public class Director {
         Director director = (Director) o;
         return id == director.id;
     }
-    
+
     @Override
     public int hashCode() {
         return Objects.hash(id);
