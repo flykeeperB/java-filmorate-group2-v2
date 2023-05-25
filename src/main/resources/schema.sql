@@ -52,7 +52,7 @@ create table IF NOT EXISTS DIRECTORS
     constraint DIRECTORS_FILMS_FILM_ID_FK
         foreign key (FILM_ID) references FILMS,
     constraint DIRECTORS_LIST_OF_DIRECTORS_DIRECTOR_ID_FK
-        foreign key (DIRECTOR_ID) references LIST_OF_DIRECTORS
+        foreign key (DIRECTOR_ID) references LIST_OF_DIRECTORS ON DELETE CASCADE
 );
 
 create table IF NOT EXISTS USERS
