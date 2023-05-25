@@ -12,6 +12,7 @@ public class Director {
     @NotEmpty
     @NotBlank
     String name;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -19,6 +20,7 @@ public class Director {
         Director director = (Director) o;
         return id == director.id;
     }
+    
     @Override
     public int hashCode() {
         return Objects.hash(id);
