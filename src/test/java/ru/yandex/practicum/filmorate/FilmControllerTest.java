@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmWithSearchStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
@@ -22,7 +21,7 @@ public class FilmControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        filmController = new FilmController(new FilmService((FilmWithSearchStorage) new InMemoryFilmStorage(new InMemoryUserStorage())));
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(new InMemoryUserStorage())));
         film = new Film();
         film.setName("Film");
         film.setDescription("Very interesting film");
