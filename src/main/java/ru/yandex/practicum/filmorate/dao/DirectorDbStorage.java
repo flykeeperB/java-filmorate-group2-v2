@@ -14,7 +14,7 @@ import java.util.*;
 
 @Repository
 public class DirectorDbStorage implements DirectorStorage {
-    static public final String FIND_DIRECTOR_IN_TABLE_SQL = "SELECT * FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
+    static final String FIND_DIRECTOR_IN_TABLE_SQL = "SELECT * FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -33,9 +33,9 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Director findDirectorById(long directorId) {
-        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL
-                , new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
-        if(director == null) {
+        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL,
+                new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
+        if (director == null) {
             throw new DirectorNotFoundException("Режиссёра c таким id нет");
         }
         return director;
@@ -56,9 +56,9 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Director updateDirector(long directorId, Director director) {
-        Director directorExist = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL
-                , new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
-        if(directorExist == null) {
+        Director directorExist = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL,
+                new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
+        if (directorExist == null) {
             throw new DirectorNotFoundException("Режиссёра c таким id нет");
         } else {
             String sqlQuery = "UPDATE LIST_OF_DIRECTORS SET DIRECTOR_NAME=? WHERE DIRECTOR_ID=?";
@@ -81,9 +81,9 @@ public class DirectorDbStorage implements DirectorStorage {
 
     public List<Film> getListOfFilmsByDirectorSortByYear(long directorId) {
         List<Film> filmsList = new ArrayList<>();
-        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL
-                , new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
-        if(director == null) {
+        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL,
+                new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
+        if (director == null) {
             throw new DirectorNotFoundException("Режиссёра c таким id нет");
         } else {
             String sql = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME " +
@@ -117,7 +117,7 @@ public class DirectorDbStorage implements DirectorStorage {
                 film.setGenres(genres);
 
                 Set<Director> directors = new HashSet<>();
-                if(directorsAndFilms.containsKey(film.getId())) {
+                if (directorsAndFilms.containsKey(film.getId())) {
                     directors = directorsAndFilms.get(film.getId());
                 }
                 film.setDirectors(directors);
@@ -132,8 +132,8 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     public List<Film> getListOfFilmsByDirectorSortByLikes(long directorId) {
         List<Film> films = new ArrayList<>();
-        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL
-                , new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
+        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL,
+                new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
         if (director == null) {
             throw new DirectorNotFoundException("Режиссёра c таким id нет");
         } else {
