@@ -27,9 +27,9 @@ import static ru.yandex.practicum.filmorate.dao.UserDbStorage.FIND_USER_BY_ID_IN
 public class FilmDbStorage implements FilmStorage {
     static final String FIND_FILM_BY_ID_IN_TABLE_SQL = "SELECT * FROM FILMS WHERE FILM_ID=?";
     static final String GET_FILMS_FROM_TABLE_SQL = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
-                    + "FROM FILMS AS f LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
-                + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID "
-                + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID ";
+            + "FROM FILMS AS f LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
+            + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID "
+            + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID ";
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -251,7 +251,7 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
             jdbcTemplate.update(sqlQuery, filmId, userId);
-            eventDbStorage.deleteLike(filmId,userId);
+            eventDbStorage.deleteLike(filmId, userId);
         }
     }
 
@@ -259,7 +259,7 @@ public class FilmDbStorage implements FilmStorage {
     public void addLike(long filmId, long userId) {
         String sql = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
-        eventDbStorage.addLike(filmId,userId);
+        eventDbStorage.addLike(filmId, userId);
     }
 
 }

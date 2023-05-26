@@ -114,8 +114,7 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}/feed")
-    public List<Event> getEventsByIdUser(@PathVariable("id") Long userId){
+    public List<Event> getEventsByIdUser(@PathVariable("id") Long userId) {
         return userService.getEventsByIdUser(userId);
     }
-
 }

@@ -104,7 +104,7 @@ public class UserDbStorage implements UserStorage {
             exists2 = count3 > 0 || count4 > 0;
             if (exists2 == false) {
                 jdbcTemplate.update("INSERT INTO FRIENDSHIP (USER1_ID, USER2_ID, STATUS) VALUES (?, ?, ?)", friendId, userId, "unconfirmed");
-                eventDbStorage.addFriend(userId,friendId);
+                eventDbStorage.addFriend(userId, friendId);
             } else if (count3 > 0) {
                 jdbcTemplate.update("UPDATE FRIENDSHIP SET STATUS = ? WHERE USER2_ID=? AND USER1_ID=?", "confirmed", friendId, userId);
             } else if (count4 > 0) {
@@ -117,7 +117,7 @@ public class UserDbStorage implements UserStorage {
     public void deleteFriend(long userId, long friendId) {
         String sql = "DELETE FROM FRIENDSHIP WHERE USER1_ID=? AND USER2_ID=?;";
         jdbcTemplate.update(sql, friendId, userId);
-        eventDbStorage.deleteFriend(userId,friendId);
+        eventDbStorage.deleteFriend(userId, friendId);
     }
 
     @Override

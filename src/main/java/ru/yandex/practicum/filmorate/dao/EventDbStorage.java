@@ -35,8 +35,8 @@ public class EventDbStorage implements EventStorage {
                 "ON e_et.operation_id=o.operation_id)";
 
         SqlRowSet eventRows = jdbcTemplate.queryForRowSet("select 1 from events where user_id = ?", id);
-        if (eventRows.next()){
-            events = jdbcTemplate.query(sqlQ,eventRowMapper(),id);
+        if (eventRows.next()) {
+            events = jdbcTemplate.query(sqlQ, eventRowMapper(), id);
         }
         return events;
     }
