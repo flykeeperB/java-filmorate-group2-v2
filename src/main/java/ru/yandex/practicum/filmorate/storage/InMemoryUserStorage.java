@@ -121,7 +121,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public boolean contains(long id){
+    public boolean contains(long id) {
         return true;
     }
 }
