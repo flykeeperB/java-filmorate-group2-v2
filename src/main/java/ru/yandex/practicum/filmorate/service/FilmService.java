@@ -4,16 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.FilmWithSearchStorage;
 
-import java.util.*;
+import java.util.List;
 
 @Service
 public class FilmService {
-    private final FilmStorage filmStorage;
+    private final FilmWithSearchStorage filmStorage;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmWithSearchStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
 
@@ -43,5 +43,9 @@ public class FilmService {
 
     public Film getFilmById(long filmId) {
         return filmStorage.findFilmById(filmId);
+    }
+
+    public List<Film> searchFilm(String query, String by) {
+        return filmStorage.searchFilms(query, by);
     }
 }
