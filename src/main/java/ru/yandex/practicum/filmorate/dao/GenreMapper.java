@@ -16,6 +16,6 @@ public class GenreMapper implements RowMapper<Genre> {
         genre.setId(rs.getLong("GENRE_ID"));
         genre.setName(rs.getString("GENRE_NAME"));
 
-       return genre;
+        return genre;
     }
 }
