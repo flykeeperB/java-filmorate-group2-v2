@@ -14,6 +14,14 @@ CREATE TABLE IF NOT EXISTS LIST_OF_MPAS
         primary key (MPA_ID)
 );
 
+create table IF NOT EXISTS LIST_OF_DIRECTORS
+(
+    DIRECTOR_ID   INTEGER auto_increment,
+    DIRECTOR_NAME CHARACTER VARYING not null,
+    constraint LIST_OF_DIRECTORS_PK
+        primary key (DIRECTOR_ID)
+);
+
 CREATE TABLE IF NOT EXISTS FILMS
 (
     FILM_ID      INTEGER auto_increment,
@@ -21,7 +29,7 @@ CREATE TABLE IF NOT EXISTS FILMS
     DESCRIPTION  CHARACTER VARYING(200) not null,
     RELEASE_DATE DATE                   not null,
     DURATION     INTEGER                not null,
-    MPA_ID          INTEGER,
+    MPA_ID       INTEGER,
     constraint FILMS_PK
         primary key (FILM_ID),
     constraint FILMS_LIST_OF_MPAS_MPA_ID_FK
@@ -38,6 +46,18 @@ CREATE TABLE IF NOT EXISTS GENRES
         foreign key (FILM_ID) references FILMS,
     constraint GENRES_LIST_OF_GENRES_GENRE_ID_FK
         foreign key (GENRE_ID) references LIST_OF_GENRES
+);
+
+CREATE TABLE IF NOT EXISTS DIRECTORS
+(
+    DIRECTOR_ID INTEGER not null,
+    FILM_ID     INTEGER not null,
+    constraint DIRECTORS_PK
+        primary key (DIRECTOR_ID, FILM_ID, DIRECTOR_ID),
+    constraint DIRECTORS_FILMS_FILM_ID_FK
+        foreign key (FILM_ID) references FILMS,
+    constraint DIRECTORS_LIST_OF_DIRECTORS_DIRECTOR_ID_FK
+        foreign key (DIRECTOR_ID) references LIST_OF_DIRECTORS ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS USERS
