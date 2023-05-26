@@ -70,7 +70,7 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    public void addDisike(@PathVariable Long id, @PathVariable Long userId) {
+    public void addDislike(@PathVariable Long id, @PathVariable Long userId) {
         log.info("PUT: /reviews/" + id + "/dislike/" + userId);
         service.addDislike(id, userId);
     }
