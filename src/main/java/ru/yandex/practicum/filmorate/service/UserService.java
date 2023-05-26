@@ -55,8 +55,8 @@ public class UserService {
         return userStorage.findAllFriends(userId);
     }
 
-    public List<Event> getEventsByIdUser (long userId){
-        if (!userStorage.contains(userId)){
+    public List<Event> getEventsByIdUser(long userId) {
+        if (!userStorage.contains(userId)) {
             throw new UserNotFoundException("Пользователь отсутствует");
         }
         return eventDbStorage.getEventById(userId);
