@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.CommonFilmsStorage;
 import ru.yandex.practicum.filmorate.storage.FilmWithSearchStorage;
 
 import java.util.*;
@@ -21,7 +22,7 @@ import static ru.yandex.practicum.filmorate.dao.UserDbStorage.FIND_USER_BY_ID_IN
 
 @Component("filmDbStorage")
 @Repository
-public class FilmDbStorage implements FilmWithSearchStorage {
+public class FilmDbStorage implements FilmWithSearchStorage, CommonFilmsStorage {
     static final String FIND_FILM_BY_ID_IN_TABLE_SQL = "SELECT * FROM FILMS WHERE FILM_ID=?";
     static final String GET_FILMS_FROM_TABLE_SQL = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
             + "FROM FILMS AS f LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
@@ -145,33 +146,7 @@ public class FilmDbStorage implements FilmWithSearchStorage {
 
     @Override
     public List<Film> findAllFilms() {
-        Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(GET_FILMS_FROM_TABLE_SQL, new FilmExtractor());
-
-        String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
-                + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
-
-        Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
-
-        List<Film> films = new ArrayList<>();
-        for (Film film : filmsWithGenre.keySet()) {
-            Set<Genre> genres = new HashSet<>();
-            for (Genre genre : filmsWithGenre.get(film)) {
-                if (genre.getId() != 0) {
-                    genres.add(genre);
-                }
-            }
-            film.setGenres(genres);
-
-            Set<Director> directors = new HashSet<>();
-            if (directorsAndFilms.containsKey(film.getId())) {
-                directors = directorsAndFilms.get(film.getId());
-            }
-            film.setDirectors(directors);
-
-            films.add(film);
-        }
-
-        return films;
+        return putAllInFilms(jdbcTemplate.query(GET_FILMS_FROM_TABLE_SQL, new FilmExtractor()));
     }
 
     @Override
@@ -182,33 +157,8 @@ public class FilmDbStorage implements FilmWithSearchStorage {
         if (filmExist == null) {
             throw new FilmNotFoundException("Фильма c таким id нет");
         } else {
-            Map<Film, List<Genre>> filmWithGenre = jdbcTemplate.query(
-                    GET_FILMS_FROM_TABLE_SQL
-                            + "WHERE f.FILM_ID=?;", new Object[]{filmId}, new FilmExtractor());
-
-            String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
-                    + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
-
-            Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
-
-            for (Film f : filmWithGenre.keySet()) {
-                Set<Genre> genres = new HashSet<>();
-                for (Genre genre : filmWithGenre.get(f)) {
-                    if (genre.getId() != 0) {
-                        genres.add(genre);
-                    }
-                }
-                f.setGenres(genres);
-
-                Set<Director> directors = new HashSet<>();
-                if (directorsAndFilms.containsKey(filmId)) {
-                    directors = directorsAndFilms.get(filmId);
-                }
-                f.setDirectors(directors);
-
-                film = f;
-            }
-            return film;
+            return putAllInFilms(jdbcTemplate.query(GET_FILMS_FROM_TABLE_SQL
+                    + "WHERE f.FILM_ID=?;", new Object[]{filmId}, new FilmExtractor())).stream().findAny().get();
         }
     }
 
@@ -326,6 +276,37 @@ public class FilmDbStorage implements FilmWithSearchStorage {
                 film.setDirectors(directors);
                 films.add(film);
             }
+        }
+        return films;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        String sql = GET_FILMS_FROM_TABLE_SQL +
+                "LEFT JOIN LIKES AS l ON l.FILM_ID = f.FILM_ID " +
+                "WHERE USER_ID = ? OR USER_ID = ? GROUP BY f.FILM_ID HAVING COUNT(*) > 1";
+        return putAllInFilms(jdbcTemplate.query(sql, new FilmExtractor(), userId, friendId));
+    }
+
+    private List<Film> putAllInFilms(Map<Film, List<Genre>> filmsWithGenre) {
+        String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
+                + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
+        Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
+        List<Film> films = new ArrayList<>();
+        for (Film film : filmsWithGenre.keySet()) {
+            Set<Genre> genres = new HashSet<>();
+            for (Genre genre : filmsWithGenre.get(film)) {
+                if (genre.getId() != 0) {
+                    genres.add(genre);
+                }
+            }
+            film.setGenres(genres);
+            Set<Director> directors = new HashSet<>();
+            if (directorsAndFilms.containsKey(film.getId())) {
+                directors = directorsAndFilms.get(film.getId());
+            }
+            film.setDirectors(directors);
+            films.add(film);
         }
         return films;
     }

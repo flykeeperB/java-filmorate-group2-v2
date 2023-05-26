@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.CommonFilmsStorage;
 import ru.yandex.practicum.filmorate.storage.FilmWithSearchStorage;
 
 import java.util.List;
@@ -11,10 +12,13 @@ import java.util.List;
 @Service
 public class FilmService {
     private final FilmWithSearchStorage filmStorage;
+    private final CommonFilmsStorage commonFilmsStorage;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmWithSearchStorage filmStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmWithSearchStorage filmStorage,
+                       @Qualifier("filmDbStorage") CommonFilmsStorage commonFilmsStorage) {
         this.filmStorage = filmStorage;
+        this.commonFilmsStorage = commonFilmsStorage;
     }
 
     public void addLike(long filmId, long userId) {
@@ -47,5 +51,9 @@ public class FilmService {
 
     public List<Film> searchFilm(String query, String by) {
         return filmStorage.searchFilms(query, by);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return commonFilmsStorage.getCommonFilms(userId, friendId);
     }
 }
