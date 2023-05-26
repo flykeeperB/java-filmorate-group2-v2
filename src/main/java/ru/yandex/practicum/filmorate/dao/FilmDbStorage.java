@@ -33,6 +33,10 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
+    EventDbStorage eventDbStorage;
+
+
+    @Autowired
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -247,6 +251,7 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
             jdbcTemplate.update(sqlQuery, filmId, userId);
+            eventDbStorage.deleteLike(filmId,userId);
         }
     }
 
@@ -254,6 +259,7 @@ public class FilmDbStorage implements FilmStorage {
     public void addLike(long filmId, long userId) {
         String sql = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
+        eventDbStorage.addLike(filmId,userId);
     }
 
 }
