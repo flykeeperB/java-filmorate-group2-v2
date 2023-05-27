@@ -13,6 +13,7 @@ import java.util.List;
 public class ExtraFunctionalFilmService extends FilmService {
     private final ExtraFunctionalFilmDbStorage extraFunctionalFilmStorage;
     private final FilmStorage filmStorage;
+
     @Autowired
     public ExtraFunctionalFilmService(@Qualifier("extraFunctionalFilmDbStorage")
                                       ExtraFunctionalFilmDbStorage extraFunctionalFilmStorage,
@@ -28,5 +29,9 @@ public class ExtraFunctionalFilmService extends FilmService {
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         return extraFunctionalFilmStorage.getCommonFilms(userId, friendId);
+    }
+
+    public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
+        return extraFunctionalFilmStorage.getPopularFilms(count, genreId, year);
     }
 }

@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.storage.database.films;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -19,10 +21,13 @@ import java.util.*;
 @Repository
 public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements ExtraFunctionalFilmStorage {
 
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
     @Autowired
     public ExtraFunctionalFilmDbStorage(JdbcTemplate jdbcTemplate,
                                         @Qualifier("userDbStorage") UserStorage userStorage) {
         super(jdbcTemplate, userStorage);
+        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
     @Override
@@ -103,12 +108,7 @@ public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements Extra
         return films;
     }
 
-    @Override
-    public List<Film> getCommonFilms(Long userId, Long friendId) {
-        String sql = GET_FILMS_FROM_TABLE_SQL +
-                "LEFT JOIN LIKES AS l ON l.FILM_ID = f.FILM_ID " +
-                "WHERE USER_ID = ? OR USER_ID = ? GROUP BY f.FILM_ID HAVING COUNT(*) > 1";
-        Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(sql, new FilmExtractor(), userId, friendId);
+    private List<Film> prepareFilmList(Map<Film, List<Genre>> filmsWithGenre) {
         String sqlDirectors = "SELECT d.FILM_ID,d.DIRECTOR_ID,l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
                 + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
         Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
@@ -129,5 +129,55 @@ public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements Extra
             films.add(film);
         }
         return films;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        String sql = GET_FILMS_FROM_TABLE_SQL +
+                "LEFT JOIN LIKES AS l ON l.FILM_ID = f.FILM_ID " +
+                "WHERE USER_ID = ? OR USER_ID = ? GROUP BY f.FILM_ID HAVING COUNT(*) > 1";
+        Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(sql, new FilmExtractor(), userId, friendId);
+
+        return prepareFilmList(filmsWithGenre);
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
+
+        var params = new MapSqlParameterSource()
+                .addValue("genreId", genreId)
+                .addValue("year", year)
+                .addValue("limit", count);
+
+        List<String> conditions = new ArrayList<>();
+
+        if (genreId > 0) {
+            conditions.add("f.FILM_ID IN (SELECT FILM_ID FROM GENRES WHERE GENRE_ID = :genreId)");
+        }
+        if (year > 0) {
+            conditions.add("EXTRACT(YEAR FROM f.RELEASE_DATE) = :year");
+        }
+
+        String condition = "";
+        if (!conditions.isEmpty()) {
+            condition = "WHERE " + String.join(" AND ", conditions) + " ";
+        }
+
+        String limitCondition = "";
+        if (count > 0) {
+            limitCondition = " LIMIT :limit";
+        }
+
+        String SQLQuery = GET_FILMS_FROM_TABLE_SQL +
+                "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes " +
+                "ON f.FILM_ID=likes.FILM_ID " +
+                condition +
+                "ORDER BY likes.COUNT_LIKES DESC" +
+                limitCondition;
+
+        Map<Film, List<Genre>> filmsWithGenre =
+                namedParameterJdbcTemplate.query(SQLQuery, params, new FilmExtractor());
+
+        return prepareFilmList(filmsWithGenre);
     }
 }
