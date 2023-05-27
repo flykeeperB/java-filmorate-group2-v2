@@ -1,8 +1,7 @@
-package ru.yandex.practicum.filmorate.dao;
+package ru.yandex.practicum.filmorate.storage.database;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -13,16 +12,15 @@ import ru.yandex.practicum.filmorate.storage.ExtraFunctionalFilmStorage;
 
 import java.util.*;
 
-import static ru.yandex.practicum.filmorate.dao.FilmDbStorage.GET_FILMS_FROM_TABLE_SQL;
-
 @Component("extraFunctionalFilmDbStorage")
 @Repository
-public class ExtraFunctionalFilmDbStorage implements ExtraFunctionalFilmStorage {
+public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements ExtraFunctionalFilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public ExtraFunctionalFilmDbStorage(JdbcTemplate jdbcTemplate) {
+        super(jdbcTemplate);
         this.jdbcTemplate = jdbcTemplate;
     }
 
