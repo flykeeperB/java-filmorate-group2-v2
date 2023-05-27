@@ -4,6 +4,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
 
-public interface FilmWithSearchStorage extends FilmStorage {
+public interface SearchFilmsStorage {
     List<Film> searchFilms(String query, String by);
 }
