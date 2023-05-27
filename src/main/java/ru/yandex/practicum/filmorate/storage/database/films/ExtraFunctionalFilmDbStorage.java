@@ -168,7 +168,7 @@ public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements Extra
             limitCondition = " LIMIT :limit";
         }
 
-        String SQLQuery = GET_FILMS_FROM_TABLE_SQL +
+        String query = GET_FILMS_FROM_TABLE_SQL +
                 "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes " +
                 "ON f.FILM_ID=likes.FILM_ID " +
                 condition +
@@ -176,7 +176,7 @@ public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements Extra
                 limitCondition;
 
         Map<Film, List<Genre>> filmsWithGenre =
-                namedParameterJdbcTemplate.query(SQLQuery, params, new FilmExtractor());
+                namedParameterJdbcTemplate.query(query, params, new FilmExtractor());
 
         return prepareFilmList(filmsWithGenre);
     }
