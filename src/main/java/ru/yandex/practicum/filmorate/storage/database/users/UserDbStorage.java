@@ -1,11 +1,11 @@
-package ru.yandex.practicum.filmorate.storage.database;
+package ru.yandex.practicum.filmorate.storage.database.users;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -25,8 +25,8 @@ public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private UserMapper userMapper;
+  //  @Autowired
+    //private UserMapper userMapper;
 
     @Autowired
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
@@ -51,9 +51,9 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User updateUser(long userId, User user) {
         User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
-                new Object[]{userId}, userMapper).stream().findAny().orElse(null);
+                new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
         if (userExist == null) {
-            throw new UserNotFoundException("Такого пользователя нет");
+            throw new NotFoundException("Такого пользователя нет");
         } else {
             String sqlQuery = "UPDATE USERS SET EMAIL=?, LOGIN=?, USER_NAME=?, BIRTHDAY=? WHERE USER_ID=?";
             jdbcTemplate.update(sqlQuery,
@@ -69,18 +69,18 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> findAllUser() {
         String sql = "SELECT * FROM USERS";
-        return jdbcTemplate.query(sql, userMapper);
+        return jdbcTemplate.query(sql, new UserMapper());
     }
 
     @Override
     public User findUserById(long userId) {
         User user;
         User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
-                new Object[]{userId}, userMapper).stream().findAny().orElse(null);
+                new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
         if (userExist == null) {
-            throw new UserNotFoundException("Такого пользователя нет");
+            throw new NotFoundException("Такого пользователя нет");
         } else {
-            user = jdbcTemplate.query("SELECT * FROM USERS WHERE USER_ID=?", new Object[]{userId}, userMapper)
+            user = jdbcTemplate.query("SELECT * FROM USERS WHERE USER_ID=?", new Object[]{userId}, new UserMapper())
                     .stream().findAny().orElse(null);
         }
         return user;
@@ -89,9 +89,9 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void addFriend(long userId, long friendId) {
         User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
-                new Object[]{friendId}, userMapper).stream().findAny().orElse(null);
+                new Object[]{friendId}, new UserMapper()).stream().findAny().orElse(null);
         if (userExist == null) {
-            throw new UserNotFoundException("Такого пользователя нет");
+            throw new NotFoundException("Такого пользователя нет");
         } else {
             String sqlQuery = "SELECT count(*) FROM FRIENDSHIP where USER1_ID=? AND USER2_ID=?";
             boolean exists2 = false;
@@ -117,7 +117,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> findAllFriends(long userId) {
         String sql = "SELECT * FROM USERS WHERE USER_ID IN (SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=?)";
-        return jdbcTemplate.query(sql, new Object[]{userId}, userMapper);
+        return jdbcTemplate.query(sql, new Object[]{userId}, new UserMapper());
     }
 
     @Override
@@ -125,6 +125,6 @@ public class UserDbStorage implements UserStorage {
         String sql = "SELECT * FROM USERS WHERE USER_ID=" +
                 "(SELECT * FROM(SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=? " +
                 "UNION ALL SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=?) GROUP BY USER1_ID HAVING COUNT(USER1_ID)=2)";
-        return jdbcTemplate.query(sql, new Object[]{userId, otherUserId}, userMapper);
+        return jdbcTemplate.query(sql, new Object[]{userId, otherUserId}, new UserMapper());
     }
 }

@@ -1,10 +1,10 @@
-package ru.yandex.practicum.filmorate.storage.database;
+package ru.yandex.practicum.filmorate.storage.database.mparatings;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exceptions.MpaNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
@@ -42,7 +42,7 @@ public class MpaDbStorage implements MpaStorage {
                         .stream().findAny().orElse(null);
             }
         } catch (EmptyResultDataAccessException e) {
-            throw new MpaNotFoundException("Mpa c таким id нет");
+            throw new NotFoundException("Mpa c таким id нет");
         }
         return mpa;
     }

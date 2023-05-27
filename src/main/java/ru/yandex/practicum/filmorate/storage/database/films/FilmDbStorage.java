@@ -1,18 +1,20 @@
-package ru.yandex.practicum.filmorate.storage.database;
+package ru.yandex.practicum.filmorate.storage.database.films;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.database.genres.GenreExtractor;
+import ru.yandex.practicum.filmorate.storage.database.directors.DirectorExtractor;
 
 import java.util.*;
 
@@ -28,11 +30,16 @@ public class FilmDbStorage implements FilmStorage {
             + "FROM FILMS AS f LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "
             + "LEFT JOIN LIST_OF_GENRES AS l ON g.GENRE_ID = l.GENRE_ID "
             + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID ";
-    private final JdbcTemplate jdbcTemplate;
+
+    protected final JdbcTemplate jdbcTemplate;
+
+    protected final UserStorage userStorage;
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate,
+                         @Qualifier("userDbStorage") UserStorage userStorage) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userStorage = userStorage;
     }
 
     private void addGenres(long idGenre, long idFilm) {
@@ -109,7 +116,7 @@ public class FilmDbStorage implements FilmStorage {
         Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL,
                 new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
         if (filmExist == null) {
-            throw new FilmNotFoundException("Фильма c таким id нет");
+            throw new NotFoundException("Фильма c таким id нет");
         } else {
             String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? "
                     + "WHERE FILM_ID=?";
@@ -181,7 +188,7 @@ public class FilmDbStorage implements FilmStorage {
         Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL,
                 new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
         if (filmExist == null) {
-            throw new FilmNotFoundException("Фильма c таким id нет");
+            throw new NotFoundException("Фильма c таким id нет");
         } else {
             Map<Film, List<Genre>> filmWithGenre = jdbcTemplate.query(
                     GET_FILMS_FROM_TABLE_SQL
@@ -238,18 +245,16 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void deleteLike(long filmId, long userId) {
-        User userExist = jdbcTemplate.query(UserDbStorage.FIND_USER_BY_ID_IN_TABLE_SQL,
-                new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
-        if (userExist == null) {
-            throw new UserNotFoundException("Такого пользователя нет");
-        } else {
-            String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
-            jdbcTemplate.update(sqlQuery, filmId, userId);
-        }
+        userStorage.findUserById(userId);
+        findFilmById(filmId);
+        String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
+        jdbcTemplate.update(sqlQuery, filmId, userId);
     }
 
     @Override
     public void addLike(long filmId, long userId) {
+        userStorage.findUserById(userId);
+        findFilmById(filmId);
         String sql = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
     }

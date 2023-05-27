@@ -2,8 +2,7 @@ package ru.yandex.practicum.filmorate.storage.inmemory;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.PopularityComparator;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -12,7 +11,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
+@Component("InMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
     //перенесите сюда всю логику хранения, обновления и поиска объектов.
     private final UserStorage userStorage;
@@ -20,7 +19,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
     private long counterIdFilm = 1;
 
-    public InMemoryFilmStorage(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public InMemoryFilmStorage(@Qualifier("InMemoryUserStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -38,9 +37,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(long id, Film film) {
-        if (!films.containsKey(film.getId())) {
-            throw new FilmNotFoundException(String.format("Фильма с id %d нет.", id));
-        }
+        this.findFilmById(id);
         films.put(id, film);
         return films.get(film.getId());
     }
@@ -53,7 +50,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film findFilmById(long id) {
         if (!films.containsKey(id)) {
-            throw new FilmNotFoundException(String.format("Фильм с id %d не найден", id));
+            throw new NotFoundException(String.format("Фильм с id %d не найден", id));
         }
         return films.get(id);
     }
@@ -65,12 +62,8 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void deleteLike(long filmId, long userId) {
-        if (!films.containsKey(filmId)) {
-            throw new FilmNotFoundException(String.format("Фильм с id %d не найден", filmId));
-        }
-        if (!userStorage.findAllUser().contains(userStorage.findUserById(userId))) {
-            throw new UserNotFoundException(String.format("Пользователь с id %d не найден", userId));
-        }
+        this.findFilmById(filmId);
+        userStorage.findUserById(userId);
         Film film = films.get(filmId);
         film.getLikes().remove(userId);
         films.put(film.getId(), film);
@@ -79,12 +72,8 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void addLike(long filmId, long userId) {
-        if (!films.containsKey(filmId)) {
-            throw new FilmNotFoundException(String.format("Фильм с id %d не найден", filmId));
-        }
-        if (!userStorage.findAllUser().contains(userStorage.findUserById(userId))) {
-            throw new UserNotFoundException(String.format("Пользователь с id %d не найден", userId));
-        }
+        this.findFilmById(filmId);
+        userStorage.findUserById(userId);
         Film film = films.get(filmId);
         film.getLikes().add(userId);
         films.put(film.getId(), film);

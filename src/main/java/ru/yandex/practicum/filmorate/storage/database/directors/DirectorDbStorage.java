@@ -1,14 +1,15 @@
-package ru.yandex.practicum.filmorate.storage.database;
+package ru.yandex.practicum.filmorate.storage.database.directors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exceptions.DirectorNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.database.films.FilmExtractor;
 
 import java.util.*;
 
@@ -36,7 +37,7 @@ public class DirectorDbStorage implements DirectorStorage {
         Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL,
                 new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
         if (director == null) {
-            throw new DirectorNotFoundException("Режиссёра c таким id нет");
+            throw new NotFoundException("Режиссёра c таким id нет");
         }
         return director;
     }
@@ -59,7 +60,7 @@ public class DirectorDbStorage implements DirectorStorage {
         Director directorExist = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL,
                 new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
         if (directorExist == null) {
-            throw new DirectorNotFoundException("Режиссёра c таким id нет");
+            throw new NotFoundException("Режиссёра c таким id нет");
         } else {
             String sqlQuery = "UPDATE LIST_OF_DIRECTORS SET DIRECTOR_NAME=? WHERE DIRECTOR_ID=?";
             jdbcTemplate.update(sqlQuery, director.getName(), directorId);
@@ -82,7 +83,7 @@ public class DirectorDbStorage implements DirectorStorage {
         Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL,
                 new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
         if (director == null) {
-            throw new DirectorNotFoundException("Режиссёра c таким id нет");
+            throw new NotFoundException("Режиссёра c таким id нет");
         } else {
             String sql = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME " +
                     "FROM DIRECTORS AS d " +
@@ -133,7 +134,7 @@ public class DirectorDbStorage implements DirectorStorage {
         Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL,
                 new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
         if (director == null) {
-            throw new DirectorNotFoundException("Режиссёра c таким id нет");
+            throw new NotFoundException("Режиссёра c таким id нет");
         } else {
             String sql = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME, likes.COUNT_LIKES " +
                     "FROM DIRECTORS AS d " +

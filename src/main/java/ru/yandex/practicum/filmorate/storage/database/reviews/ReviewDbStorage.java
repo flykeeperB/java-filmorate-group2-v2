@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.database;
+package ru.yandex.practicum.filmorate.storage.database.reviews;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
@@ -47,7 +47,7 @@ public class ReviewDbStorage implements ReviewStorage {
             throw new ValidationException("Идентификатор не задан.");
         }
         if (id < 1) {
-            throw new ReviewNotFoundException("Запись по неверному идентификатору не может быть найдена.");
+            throw new NotFoundException("Запись по неверному идентификатору не может быть найдена.");
         }
     }
 
@@ -87,7 +87,7 @@ public class ReviewDbStorage implements ReviewStorage {
         try {
             return jdbcTemplate.queryForObject(query, reviewMapper, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new ReviewNotFoundException("Запись не найдена.");
+            throw new NotFoundException("Запись не найдена.");
         }
     }
 
@@ -121,7 +121,7 @@ public class ReviewDbStorage implements ReviewStorage {
             if (status != 0) {
                 log.info("Запись успешно обновлена ");
             } else {
-                throw new ReviewNotFoundException("Запись с заданным идентификатором для обновления не найдена.");
+                throw new NotFoundException("Запись с заданным идентификатором для обновления не найдена.");
             }
         } catch (RuntimeException e) {
             log.error(e.getMessage());
@@ -144,7 +144,7 @@ public class ReviewDbStorage implements ReviewStorage {
         try {
             return jdbcTemplate.query(query, reviewMapper, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new ReviewNotFoundException("Записи не найдены.");
+            throw new NotFoundException("Записи не найдены.");
         }
     }
 
@@ -159,7 +159,7 @@ public class ReviewDbStorage implements ReviewStorage {
             if (rows > 0) {
                 log.info("Запись удалена.");
             } else {
-                throw new ReviewNotFoundException("Запись не удалена.");
+                throw new NotFoundException("Запись не удалена.");
             }
         } catch (RuntimeException e) {
             log.info(e.getMessage());

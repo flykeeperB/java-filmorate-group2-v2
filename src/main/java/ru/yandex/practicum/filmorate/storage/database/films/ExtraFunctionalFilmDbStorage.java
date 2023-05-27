@@ -1,6 +1,7 @@
-package ru.yandex.practicum.filmorate.storage.database;
+package ru.yandex.practicum.filmorate.storage.database.films;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
@@ -9,6 +10,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.ExtraFunctionalFilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.database.directors.DirectorExtractor;
 
 import java.util.*;
 
@@ -16,12 +19,10 @@ import java.util.*;
 @Repository
 public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements ExtraFunctionalFilmStorage {
 
-    private final JdbcTemplate jdbcTemplate;
-
     @Autowired
-    public ExtraFunctionalFilmDbStorage(JdbcTemplate jdbcTemplate) {
-        super(jdbcTemplate);
-        this.jdbcTemplate = jdbcTemplate;
+    public ExtraFunctionalFilmDbStorage(JdbcTemplate jdbcTemplate,
+                                        @Qualifier("userDbStorage") UserStorage userStorage) {
+        super(jdbcTemplate, userStorage);
     }
 
     @Override

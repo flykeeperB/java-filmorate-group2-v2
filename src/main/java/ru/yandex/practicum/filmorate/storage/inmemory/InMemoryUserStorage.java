@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.inmemory;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+@Component("InMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
     private int counterIdUser = 1;
@@ -29,9 +29,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User updateUser(long id, User user) {
-        if (!users.containsKey(id)) {
-            throw new UserNotFoundException(String.format("Пользователя с id %d нет.", id));
-        }
+        this.findUserById(id);
         users.put(id, user);
         return users.get(user.getId());
     }
@@ -44,19 +42,16 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User findUserById(long id) {
         if (!users.containsKey(id)) {
-            throw new UserNotFoundException(String.format("Пользователя с id %d нет.", id));
+            throw new NotFoundException(String.format("Пользователя с id %d нет.", id));
         }
         return users.get(id);
     }
 
     @Override
     public void addFriend(long userId, long friendId) {
-        if (!users.containsKey(userId)) {
-            throw new UserNotFoundException(String.format("Пользователя с id %d нет.", userId));
-        }
-        if (!users.containsKey(friendId)) {
-            throw new UserNotFoundException(String.format("Пользователя с id %d нет.", friendId));
-        }
+        findUserById(userId);
+        findUserById(friendId);
+
         User user = users.get(userId);
         user.getFriends().add(friendId);
         users.put(user.getId(), user);
@@ -68,12 +63,9 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void deleteFriend(long userId, long friendId) {
-        if (!users.containsKey(userId)) {
-            throw new UserNotFoundException(String.format("Пользователя с id %d нет.", userId));
-        }
-        if (!users.containsKey(friendId)) {
-            throw new UserNotFoundException(String.format("Пользователя с id %d нет.", friendId));
-        }
+        findUserById(userId);
+        findUserById(friendId);
+
         User user = users.get(userId);
         user.getFriends().remove(friendId);
         users.put(user.getId(), user);
@@ -85,9 +77,8 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> findAllFriends(long userId) {
-        if (!users.containsKey(userId)) {
-            throw new UserNotFoundException(String.format("Пользователя с id %d нет.", userId));
-        }
+        findUserById(userId);
+
         User user = users.get(userId);
         List<Long> listFriendsId = new ArrayList<>(user.getFriends());
 
@@ -100,12 +91,9 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> findCommonFriends(long userId, long otherUserId) {
-        if (!users.containsKey(userId)) {
-            throw new UserNotFoundException(String.format("Пользователя с id %d нет.", userId));
-        }
-        if (!users.containsKey(otherUserId)) {
-            throw new UserNotFoundException(String.format("Пользователя с id %d нет.", otherUserId));
-        }
+        findUserById(userId);
+        findUserById(otherUserId);
+
         User firstUser = users.get(userId);
         List<Long> listFriendsIdFirstUser = new ArrayList<>(firstUser.getFriends());
 
