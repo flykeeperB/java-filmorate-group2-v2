@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +45,7 @@ public class EventDbStorage implements EventStorage {
 
         int type = getIdType("LIKE");
         int opr = getIdOperation("ADD");
-        LocalDate date = LocalDate.now();
+        LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, filmId);
     }

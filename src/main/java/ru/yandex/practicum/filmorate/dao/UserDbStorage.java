@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.HashMap;
@@ -18,24 +21,19 @@ import java.util.Map;
 // соответствующие мапперы и методы, позволяющие сохранять
 // пользователей в БД и получать их из неё
 
-@Component("userDbStorage")
+@Component
 @Repository
+@AllArgsConstructor
+@Primary
 public class UserDbStorage implements UserStorage {
 
     static final String FIND_USER_BY_ID_IN_TABLE_SQL = "SELECT * FROM USERS WHERE USER_ID=?";
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
     private UserMapper userMapper;
 
-    @Autowired
-    private EventDbStorage eventDbStorage;
-
-    @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private EventStorage eventStorage;
 
     @Override
     public User addUser(User user) {
@@ -104,7 +102,7 @@ public class UserDbStorage implements UserStorage {
             exists2 = count3 > 0 || count4 > 0;
             if (exists2 == false) {
                 jdbcTemplate.update("INSERT INTO FRIENDSHIP (USER1_ID, USER2_ID, STATUS) VALUES (?, ?, ?)", friendId, userId, "unconfirmed");
-                eventDbStorage.addFriend(userId, friendId);
+                eventStorage.addFriend(userId, friendId);
             } else if (count3 > 0) {
                 jdbcTemplate.update("UPDATE FRIENDSHIP SET STATUS = ? WHERE USER2_ID=? AND USER1_ID=?", "confirmed", friendId, userId);
             } else if (count4 > 0) {
@@ -117,7 +115,7 @@ public class UserDbStorage implements UserStorage {
     public void deleteFriend(long userId, long friendId) {
         String sql = "DELETE FROM FRIENDSHIP WHERE USER1_ID=? AND USER2_ID=?;";
         jdbcTemplate.update(sql, friendId, userId);
-        eventDbStorage.deleteFriend(userId, friendId);
+        eventStorage.deleteFriend(userId, friendId);
     }
 
     @Override

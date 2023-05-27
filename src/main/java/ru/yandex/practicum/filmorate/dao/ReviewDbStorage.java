@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.util.HashMap;
@@ -25,10 +26,13 @@ public class ReviewDbStorage implements ReviewStorage {
 
     private final ReviewMapper reviewMapper;
 
+    private final EventStorage eventStorage;
+
     @Autowired
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate, ReviewMapper reviewMapper) {
+    public ReviewDbStorage(JdbcTemplate jdbcTemplate, ReviewMapper reviewMapper, EventStorage eventStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.reviewMapper = reviewMapper;
+        this.eventStorage = eventStorage;
     }
 
     private String getBaseSelectSQL() {
@@ -71,7 +75,9 @@ public class ReviewDbStorage implements ReviewStorage {
         try {
             Number newId = insertRequest.executeAndReturnKey(parameters);
             log.info("Добавлен отзыв, id=" + newId.toString());
-            return get(newId.longValue());
+            Review resultReview = get(newId.longValue());
+            eventStorage.addReview(resultReview.getUserId(), resultReview.getReviewId());
+            return resultReview;
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
@@ -107,6 +113,8 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review update(Review review) {
         validateId(review.getReviewId());
 
+        Review rev = get(review.getReviewId());
+
         String query = "UPDATE REVIEWS SET " +
                 "CONTENT=?, " +
                 "IS_POSITIVE=? " +
@@ -119,6 +127,7 @@ public class ReviewDbStorage implements ReviewStorage {
                     review.getReviewId());
 
             if (status != 0) {
+                eventStorage.updateReview(rev.getUserId(), rev.getReviewId());
                 log.info("Запись успешно обновлена ");
             } else {
                 throw new ReviewNotFoundException("Запись с заданным идентификатором для обновления не найдена.");
@@ -154,9 +163,12 @@ public class ReviewDbStorage implements ReviewStorage {
 
         String query = "DELETE FROM REVIEWS WHERE REVIEW_ID=?";
 
+        Review review = get(id);
+
         try {
             int rows = jdbcTemplate.update(query, id);
             if (rows > 0) {
+                eventStorage.deleteReview(review.getUserId(), review.getReviewId());
                 log.info("Запись удалена.");
             } else {
                 throw new ReviewNotFoundException("Запись не удалена.");

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dao;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmWithSearchStorage;
 
 import java.util.*;
@@ -21,6 +23,7 @@ import static ru.yandex.practicum.filmorate.dao.UserDbStorage.FIND_USER_BY_ID_IN
 
 @Component("filmDbStorage")
 @Repository
+@AllArgsConstructor
 public class FilmDbStorage implements FilmWithSearchStorage {
     static final String FIND_FILM_BY_ID_IN_TABLE_SQL = "SELECT * FROM FILMS WHERE FILM_ID=?";
     static final String GET_FILMS_FROM_TABLE_SQL = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
@@ -29,14 +32,8 @@ public class FilmDbStorage implements FilmWithSearchStorage {
             + "LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID ";
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    EventDbStorage eventDbStorage;
+    private final EventStorage eventStorage;
 
-
-    @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     private void addGenres(long idGenre, long idFilm) {
         try {
@@ -248,7 +245,7 @@ public class FilmDbStorage implements FilmWithSearchStorage {
         } else {
             String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
             jdbcTemplate.update(sqlQuery, filmId, userId);
-            eventDbStorage.deleteLike(filmId, userId);
+            eventStorage.deleteLike(filmId, userId);
         }
     }
 
@@ -256,7 +253,7 @@ public class FilmDbStorage implements FilmWithSearchStorage {
     public void addLike(long filmId, long userId) {
         String sql = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
-        eventDbStorage.addLike(filmId, userId);
+        eventStorage.addLike(filmId, userId);
     }
 
     @Override

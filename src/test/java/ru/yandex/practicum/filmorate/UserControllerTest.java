@@ -20,16 +20,16 @@ public class UserControllerTest {
 
     User user;
 
-    @BeforeEach
-    void beforeEach() {
-        userController = new UserController(new UserService(new InMemoryUserStorage()));
-        user = new User();
-        user.setEmail("email@email.ru");
-        user.setLogin("Login");
-        user.setName("Name");
-        user.setBirthday(LocalDate.of(2000, 1, 1));
-
-    }
+//    @BeforeEach
+//    void beforeEach() {
+//        userController = new UserController(new UserService(new InMemoryUserStorage()));
+//        user = new User();
+//        user.setEmail("email@email.ru");
+//        user.setLogin("Login");
+//        user.setName("Name");
+//        user.setBirthday(LocalDate.of(2000, 1, 1));
+//
+//    }
 
     @Test
     void shouldPostUserWithEmptyEmail() {
