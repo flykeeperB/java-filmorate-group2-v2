@@ -78,9 +78,9 @@ CREATE TABLE IF NOT EXISTS LIKES
     constraint LIKES_PK
         primary key (FILM_ID, USER_ID),
     constraint LIKES_FILMS_FILM_ID_FK
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
     constraint LIKES_USERS_USER_ID_FK
-        foreign key (USER_ID) references USERS
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS FRIENDSHIP
