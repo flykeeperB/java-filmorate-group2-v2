@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS GENRES
     constraint GENRES_FILMS_FILM_ID_FK
         foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
     constraint GENRES_LIST_OF_GENRES_GENRE_ID_FK
-        foreign key (GENRE_ID) references LIST_OF_GENRES
+        foreign key (GENRE_ID) references LIST_OF_GENRES ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS DIRECTORS
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS DIRECTORS
     constraint DIRECTORS_PK
         primary key (DIRECTOR_ID, FILM_ID, DIRECTOR_ID),
     constraint DIRECTORS_FILMS_FILM_ID_FK
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
     constraint DIRECTORS_LIST_OF_DIRECTORS_DIRECTOR_ID_FK
         foreign key (DIRECTOR_ID) references LIST_OF_DIRECTORS ON DELETE CASCADE
 );
