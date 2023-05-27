@@ -9,19 +9,15 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.FilmWithSearchStorage;
+import ru.yandex.practicum.filmorate.storage.ExtraFunctionalFilmStorage;
 
 import java.util.*;
 
 import static ru.yandex.practicum.filmorate.dao.UserDbStorage.FIND_USER_BY_ID_IN_TABLE_SQL;
 
-//класс DAO - объект доступа к данным. Необходимо написать
-// соответствующие мапперы и методы, позволяющие сохранять
-// фильмы в БД и получать их из неё
-
 @Component("filmDbStorage")
 @Repository
-public class FilmDbStorage implements FilmWithSearchStorage {
+public class FilmDbStorage implements ExtraFunctionalFilmStorage {
     static final String FIND_FILM_BY_ID_IN_TABLE_SQL = "SELECT * FROM FILMS WHERE FILM_ID=?";
     static final String GET_FILMS_FROM_TABLE_SQL = "SELECT f.*, l.GENRE_ID, l.GENRE_NAME, m.MPA_NAME "
             + "FROM FILMS AS f LEFT JOIN GENRES AS g ON f.FILM_ID = g.FILM_ID "

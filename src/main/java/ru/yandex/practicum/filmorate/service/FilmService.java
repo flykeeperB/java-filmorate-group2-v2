@@ -33,6 +33,10 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
+    public List<Film> getPopularFilms(int count, Long genreId) {
+        return filmStorage.getPopularFilms(count);
+    }
+
     public Film createFilm(Film film) {
         return filmStorage.addFilm(film);
     }
