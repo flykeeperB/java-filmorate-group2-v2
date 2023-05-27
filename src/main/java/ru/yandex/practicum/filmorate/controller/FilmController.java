@@ -8,10 +8,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
 
 @Slf4j
 @RestController
+@RequestMapping(value = "/films")
 public class FilmController {
     private final FilmService filmService;
 
@@ -20,23 +21,23 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @GetMapping("/films")
+    @GetMapping
     public List<Film> findAll() {
         return filmService.getAllFilms();
     }
 
-    @GetMapping("/films/{id}")
+    @GetMapping("/{id}")
     public Film findById(@PathVariable Long id) {
         return filmService.getFilmById(id);
     }
 
-    @GetMapping("/films/popular")
+    @GetMapping("/popular")
     public List<Film> findPopularFilms(
             @RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
         return filmService.getPopularFilms(count);
     }
 
-    @PostMapping("/films")
+    @PostMapping
     public Film create(@RequestBody Film film) {
         log.info("POST request received: {}", film);
         if (film.getName() == null || film.getName().isBlank() || film.getName().isEmpty()) {
@@ -58,7 +59,7 @@ public class FilmController {
         return filmService.createFilm(film);
     }
 
-    @PutMapping("/films")
+    @PutMapping
     public Film put(@RequestBody Film film) {
         log.info("PUT request received: {}", film);
         if (film.getName() == null || film.getName().isBlank() || film.getName().isEmpty()) {
@@ -80,18 +81,23 @@ public class FilmController {
         return filmService.updateFilm(film.getId(), film);
     }
 
-    @PutMapping("/films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public void putLikeFilm(
             @PathVariable("id") Long filmId,
             @PathVariable("userId") Long userId) {
         filmService.addLike(filmId, userId);
     }
 
-    @DeleteMapping("/films/{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     public void deleteLikeFilm(
             @PathVariable("id") Long filmId,
             @PathVariable("userId") Long userId) {
         filmService.deleteLike(filmId, userId);
     }
 
+    @GetMapping("/films/search")
+    public List<Film> searchFilm(@RequestParam String query,
+                                 @RequestParam String by) {
+        return filmService.searchFilm(query, by);
+    }
 }

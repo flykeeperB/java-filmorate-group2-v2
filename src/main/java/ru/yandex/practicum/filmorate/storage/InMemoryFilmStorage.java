@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class InMemoryFilmStorage implements FilmStorage {
+public class InMemoryFilmStorage implements FilmWithSearchStorage {
     //перенесите сюда всю логику хранения, обновления и поиска объектов.
     private final UserStorage userStorage;
     private final PopularityComparator popularityComparator = new PopularityComparator();
@@ -89,4 +89,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.get(filmId);
     }
 
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        return null;
+    }
 }
