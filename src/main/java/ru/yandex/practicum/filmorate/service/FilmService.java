@@ -4,21 +4,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.CommonFilmsStorage;
-import ru.yandex.practicum.filmorate.storage.FilmWithSearchStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.List;
 
 @Service
 public class FilmService {
-    private final FilmWithSearchStorage filmStorage;
-    private final CommonFilmsStorage commonFilmsStorage;
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmWithSearchStorage filmStorage,
-                       @Qualifier("filmDbStorage") CommonFilmsStorage commonFilmsStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
-        this.commonFilmsStorage = commonFilmsStorage;
     }
 
     public void addLike(long filmId, long userId) {
@@ -49,11 +45,4 @@ public class FilmService {
         return filmStorage.findFilmById(filmId);
     }
 
-    public List<Film> searchFilm(String query, String by) {
-        return filmStorage.searchFilms(query, by);
-    }
-
-    public List<Film> getCommonFilms(Long userId, Long friendId) {
-        return commonFilmsStorage.getCommonFilms(userId, friendId);
-    }
 }

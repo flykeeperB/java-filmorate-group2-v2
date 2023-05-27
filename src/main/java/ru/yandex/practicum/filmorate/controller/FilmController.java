@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.ExtraFunctionalFilmService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/films")
 public class FilmController {
-    private final FilmService filmService;
+    private final ExtraFunctionalFilmService filmService;
 
     @Autowired
-    public FilmController(FilmService filmService) {
+    public FilmController(ExtraFunctionalFilmService filmService) {
         this.filmService = filmService;
     }
 

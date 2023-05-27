@@ -23,12 +23,7 @@ public class FilmControllerTest {
 
     @BeforeEach
     void beforeEach() {
-        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(new InMemoryUserStorage()), new CommonFilmsStorage() {
-            @Override
-            public List<Film> getCommonFilms(Long userId, Long friendId) {
-                return null;
-            }
-        }));
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(new InMemoryUserStorage())));
         film = new Film();
         film.setName("Film");
         film.setDescription("Very interesting film");
