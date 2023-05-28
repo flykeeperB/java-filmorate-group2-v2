@@ -38,4 +38,12 @@ public class ExtraFunctionalFilmService extends FilmService {
     public void deleteLike(long filmId, long userId) {
         filmStorage.deleteLike(filmId, userId);
     }
+
+    public List<Film> getFilmsByDirectorSortByYear(long id) {
+        return filmStorage.getFilmsByDirectorSortByYear(id);
+    }
+
+    public List<Film> getFilmsByDirectorSortByLikes(long id) {
+        return filmStorage.getFilmsByDirectorSortByLikes(id);
+    }
 }

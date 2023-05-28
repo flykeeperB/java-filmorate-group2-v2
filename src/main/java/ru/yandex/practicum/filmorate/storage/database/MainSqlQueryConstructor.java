@@ -1,10 +1,9 @@
-package ru.yandex.practicum.filmorate.storage.database.films;
+package ru.yandex.practicum.filmorate.storage.database;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import ru.yandex.practicum.filmorate.storage.database.SqlQueryConstructor;
 
 @AllArgsConstructor
 @Getter
@@ -27,7 +26,7 @@ public class MainSqlQueryConstructor implements SqlQueryConstructor {
     @Override
     public String getSelectQuery() {
 
-        StringBuilder sb = new StringBuilder("SELECT");
+        StringBuilder sb = new StringBuilder("SELECT ");
         sb.append(this.getFieldsPart());
 
         if (getFromPart() != null) {

@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.ExtraFunctionalFilmService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -107,5 +108,19 @@ public class FilmController {
     public List<Film> searchFilm(@RequestParam Long userId,
                                  @RequestParam Long friendId) {
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/director/{id}")
+    public List<Film> getListFilmsByDirector(@PathVariable Long id,
+                                             @RequestParam String sortBy) {
+        List<Film> films = new ArrayList<>();
+        if (sortBy.equals("likes")) {
+            films = filmService.getFilmsByDirectorSortByLikes(id);
+        }
+        if (sortBy.equals("year")) {
+            films = filmService.getFilmsByDirectorSortByYear(id);
+        }
+
+        return films;
     }
 }

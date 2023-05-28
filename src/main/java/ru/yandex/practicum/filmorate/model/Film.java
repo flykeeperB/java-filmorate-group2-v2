@@ -58,10 +58,10 @@ public class Film {
         this.directors = directors;
     }
 
-    public void setDirectors(List<Genre> genres) {
-        this.genres.clear();
-        if (genres != null) {
-            this.genres.addAll(genres);
+    public void setDirectors(List<Director> director) {
+        this.directors.clear();
+        if (director != null) {
+            this.directors.addAll(director);
         }
     }
 
@@ -72,10 +72,10 @@ public class Film {
         }
     }
 
-    public void setLikes(List<Genre> genres) {
-        this.genres.clear();
-        if (genres != null) {
-            this.genres.addAll(genres);
+    public void setLikes(List<Long> likes) {
+        this.likes.clear();
+        if (likes != null) {
+            this.likes.addAll(likes);
         }
     }
 
