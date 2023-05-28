@@ -17,18 +17,6 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public void addFriend(long userId, long friendId) {
-        userStorage.addFriend(userId, friendId);
-    }
-
-    public void deleteFriend(long userId, long friendId) {
-        userStorage.deleteFriend(userId, friendId);
-    }
-
-    public List<User> getListCommonFriends(long userId, long otherUserId) {
-        return userStorage.findCommonFriends(userId, otherUserId);
-    }
-
     public List<User> getListAllUsers() {
         return userStorage.findAllUser();
     }
@@ -45,7 +33,4 @@ public class UserService {
         return userStorage.findUserById(id);
     }
 
-    public List<User> getListFriends(long userId) {
-        return userStorage.findAllFriends(userId);
-    }
 }

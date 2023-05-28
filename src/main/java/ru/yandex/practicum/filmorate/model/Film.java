@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -9,10 +10,11 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-
+@Slf4j
 @Data
 public class Film {
     private long id;
@@ -55,6 +57,27 @@ public class Film {
         this.genres = genres;
         this.mpa = mpa;
         this.directors = directors;
+    }
+
+    public void setDirectors(List<Director> director) {
+        this.directors.clear();
+        if (director != null) {
+            this.directors.addAll(director);
+        }
+    }
+
+    public void setGenres(List<Genre> genres) {
+        this.genres.clear();
+        if (genres != null) {
+            this.genres.addAll(genres);
+        }
+    }
+
+    public void setLikes(List<Long> likes) {
+        this.likes.clear();
+        if (likes != null) {
+            this.likes.addAll(likes);
+        }
     }
 
     @Override
