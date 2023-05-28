@@ -108,4 +108,9 @@ public class InMemoryUserStorage implements UserStorage {
         }
         return listCommonFriends;
     }
+
+    @Override
+    public void deleteUserById(long userId) {
+
+    }
 }

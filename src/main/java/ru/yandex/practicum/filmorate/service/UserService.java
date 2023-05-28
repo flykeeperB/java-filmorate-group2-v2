@@ -48,4 +48,8 @@ public class UserService {
     public List<User> getListFriends(long userId) {
         return userStorage.findAllFriends(userId);
     }
+
+    public void deleteUserById(long userId) {
+        userStorage.deleteUserById(userId);
+    }
 }

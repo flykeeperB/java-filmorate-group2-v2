@@ -45,4 +45,7 @@ public class FilmService {
         return filmStorage.findFilmById(filmId);
     }
 
+    public void deleteUserById(Long id) {
+        filmStorage.deleteFilmById(id);
+    }
 }

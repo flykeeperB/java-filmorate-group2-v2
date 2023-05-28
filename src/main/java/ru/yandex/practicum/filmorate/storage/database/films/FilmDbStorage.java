@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.database.genres.GenreExtractor;
 import ru.yandex.practicum.filmorate.storage.database.directors.DirectorExtractor;
+import ru.yandex.practicum.filmorate.storage.database.genres.GenreListExtractor;
 
 import java.util.*;
 
@@ -222,20 +223,38 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        Map<Film, List<Genre>> filmsWithGenre = jdbcTemplate.query(
-                GET_FILMS_FROM_TABLE_SQL
-                        + "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes "
-                        + "ON f.FILM_ID=likes.FILM_ID ORDER BY likes.COUNT_LIKES DESC LIMIT "
-                        + count, new FilmExtractor());
+        List<Film> filmsWithMpa = jdbcTemplate.query(
+                "SELECT f.*, m.MPA_NAME " +
+                        "FROM FILMS AS f " +
+                        "    LEFT JOIN LIST_OF_MPAS AS m on f.MPA_ID = m.MPA_ID " +
+                        "                LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes " +
+                        "                    ON f.FILM_ID=likes.FILM_ID ORDER BY likes.COUNT_LIKES DESC LIMIT "
+                        + count, new FilmWithMpaMapper());
+
+        String sqlDirectors = "SELECT d.FILM_ID, d.DIRECTOR_ID, l.DIRECTOR_NAME FROM LIST_OF_DIRECTORS AS l "
+                + "LEFT JOIN DIRECTORS AS d ON d.DIRECTOR_ID = l.DIRECTOR_ID";
+
+        Map<Long, Set<Director>> directorsAndFilms = jdbcTemplate.query(sqlDirectors, new DirectorExtractor());
+
+        String sqlGenres = "SELECT g.FILM_ID, g.GENRE_ID, l.GENRE_NAME FROM GENRES AS g " +
+                "LEFT JOIN LIST_OF_GENRES AS l ON l.GENRE_ID = g.GENRE_ID";
+
+        Map<Long, Set<Genre>> genresAndFilms = jdbcTemplate.query(sqlGenres, new GenreListExtractor());
+
         List<Film> films = new ArrayList<>();
-        for (Film film : filmsWithGenre.keySet()) {
+        for (Film film : filmsWithMpa) {
             Set<Genre> genres = new HashSet<>();
-            for (Genre genre : filmsWithGenre.get(film)) {
-                if (genre.getId() != 0) {
-                    genres.add(genre);
-                }
+            if (genresAndFilms.containsKey(film.getId())) {
+                genres = genresAndFilms.get(film.getId());
             }
+
             film.setGenres(genres);
+
+            Set<Director> directors = new HashSet<>();
+            if (directorsAndFilms.containsKey(film.getId())) {
+                directors = directorsAndFilms.get(film.getId());
+            }
+            film.setDirectors(directors);
 
             films.add(film);
         }
@@ -257,5 +276,17 @@ public class FilmDbStorage implements FilmStorage {
         findFilmById(filmId);
         String sql = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
+    }
+
+    @Override
+    public void deleteFilmById(long filmId) {
+        Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL,
+                new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
+        if (filmExist == null) {
+            throw new NotFoundException("Фильма c таким id нет");
+        } else {
+            String sql = "DELETE FROM FILMS WHERE FILM_ID=?";
+            jdbcTemplate.update(sql, filmId);
+        }
     }
 }
