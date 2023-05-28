@@ -9,6 +9,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -55,6 +56,27 @@ public class Film {
         this.genres = genres;
         this.mpa = mpa;
         this.directors = directors;
+    }
+
+    public void setDirectors(List<Genre> genres) {
+        this.genres.clear();
+        if (genres != null) {
+            this.genres.addAll(genres);
+        }
+    }
+
+    public void setGenres(List<Genre> genres) {
+        this.genres.clear();
+        if (genres != null) {
+            this.genres.addAll(genres);
+        }
+    }
+
+    public void setLikes(List<Genre> genres) {
+        this.genres.clear();
+        if (genres != null) {
+            this.genres.addAll(genres);
+        }
     }
 
     @Override

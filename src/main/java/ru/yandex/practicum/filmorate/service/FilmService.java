@@ -17,14 +17,6 @@ public class FilmService {
         this.filmStorage = filmStorage;
     }
 
-    public void addLike(long filmId, long userId) {
-        filmStorage.addLike(filmId, userId);
-    }
-
-    public void deleteLike(long filmId, long userId) {
-        filmStorage.deleteLike(filmId, userId);
-    }
-
     public List<Film> getAllFilms() {
         return filmStorage.findAllFilms();
     }

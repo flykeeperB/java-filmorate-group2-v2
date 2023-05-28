@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.ExtraFunctionalUserService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/users")
 public class UserController {
-    private final UserService userService;
+    private final ExtraFunctionalUserService userService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(ExtraFunctionalUserService userService) {
         this.userService = userService;
     }
 

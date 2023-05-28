@@ -21,13 +21,10 @@ import java.util.*;
 @Repository
 public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements ExtraFunctionalFilmStorage {
 
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
     @Autowired
     public ExtraFunctionalFilmDbStorage(JdbcTemplate jdbcTemplate,
                                         @Qualifier("userDbStorage") UserStorage userStorage) {
         super(jdbcTemplate, userStorage);
-        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
     @Override
