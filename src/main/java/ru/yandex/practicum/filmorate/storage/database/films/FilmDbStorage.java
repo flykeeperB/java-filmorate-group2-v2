@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.database.MainSqlQueryConstructor;
@@ -175,6 +176,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilms(List<Long> ids) {
+        log.info("Storage.getFilms()");
         return getFilms(ids, null);
     }
 
@@ -190,14 +192,17 @@ public class FilmDbStorage implements FilmStorage {
 
         if (ids != null) {
             if (ids.isEmpty()) {
+                log.info("getFilms return = new ArrayList<>()");
                 return new ArrayList<>();
             } else {
                 queryConstructor.setWherePart("f.FILM_ID IN (:ids)");
             }
         }
 
-        if ((orderFields != null && (!orderFields.isEmpty()))) {
-            queryConstructor.setOrderPart(orderFields);
+        if (orderFields != null) {
+            if (!orderFields.isEmpty()) {
+                queryConstructor.setOrderPart(orderFields);
+            }
         }
 
         String query = queryConstructor.getSelectQuery();
@@ -268,6 +273,7 @@ public class FilmDbStorage implements FilmStorage {
     public void deleteLike(long filmId, long userId) {
         userStorage.findUserById(userId);
         findFilmById(filmId);
+
         String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
         jdbcTemplate.update(sqlQuery, filmId, userId);
     }
@@ -276,11 +282,13 @@ public class FilmDbStorage implements FilmStorage {
     public void addLike(long filmId, long userId) {
         userStorage.findUserById(userId);
         findFilmById(filmId);
+
         String sql = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
     }
 
     private Map<Long, List<Genre>> getGenresForFilms(List<Film> films) {
+
         MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
                 .builder()
                 .fieldsPart("g.FILM_ID, g.GENRE_ID, lg.GENRE_NAME")
@@ -298,8 +306,6 @@ public class FilmDbStorage implements FilmStorage {
                     .collect(Collectors.toList()));
         }
 
-        log.info(params.toString());
-
         Map<Long, List<Genre>> result = new HashMap<>();
         try {
             result = namedParameterJdbcTemplate.query(query, params, (rs) -> {
@@ -316,6 +322,7 @@ public class FilmDbStorage implements FilmStorage {
                 }
                 return subResult;
             });
+
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
@@ -333,7 +340,7 @@ public class FilmDbStorage implements FilmStorage {
                 .fieldsPart("d.FILM_ID, ld.DIRECTOR_ID, ld.DIRECTOR_NAME")
                 .fromPart("DIRECTORS as d LEFT JOIN LIST_OF_DIRECTORS as ld " +
                         "ON d.DIRECTOR_ID = ld.DIRECTOR_ID")
-                .wherePart("d.FILM_ID IN (:ids)")
+                .wherePart("d.FILM_ID IN ( :ids )")
                 .build();
 
         String query = queryConstructor.getSelectQuery();
@@ -347,7 +354,7 @@ public class FilmDbStorage implements FilmStorage {
 
         Map<Long, List<Director>> result = new HashMap<>();
         try {
-            namedParameterJdbcTemplate.query(query, params, (rs) -> {
+            result = namedParameterJdbcTemplate.query(query, params, (rs) -> {
                 Map<Long, List<Director>> subResult = new HashMap<>();
                 while (rs.next()) {
                     Director director = new Director();
@@ -360,6 +367,7 @@ public class FilmDbStorage implements FilmStorage {
 
                     subResult.put(rs.getLong("FILM_ID"), directorsOfFilm);
                 }
+
                 return subResult;
             });
         } catch (RuntimeException e) {
@@ -388,7 +396,7 @@ public class FilmDbStorage implements FilmStorage {
 
         Map<Long, List<Long>> result = new HashMap<>();
         try {
-            namedParameterJdbcTemplate.query(query, params, (rs) -> {
+            result = namedParameterJdbcTemplate.query(query, params, (rs) -> {
                 Map<Long, List<Long>> subResult = new HashMap<>();
                 while (rs.next()) {
                     List<Long> likesOfFilm =

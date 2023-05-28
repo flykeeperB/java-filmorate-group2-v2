@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-
+@Slf4j
 @Data
 public class Film {
     private long id;

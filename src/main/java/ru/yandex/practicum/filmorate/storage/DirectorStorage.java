@@ -7,11 +7,11 @@ import java.util.List;
 public interface DirectorStorage {
     List<Director> findAllDirectors();
 
-    Director findDirectorById(long directorId);
+    Director findDirectorById(Long directorId);
 
     Director addDirector(Director director);
 
-    Director updateDirector(long id, Director director);
+    Director updateDirector(Long id, Director director);
 
-    void deleteDirector(long id);
+    void deleteDirector(Long id);
 }
