@@ -141,40 +141,43 @@ public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements Extra
     @Override
     public List<Film> getPopularFilms(Integer count, Long genreId, Integer year) {
 
-        var params = new MapSqlParameterSource()
-                .addValue("genreId", genreId)
-                .addValue("year", year)
-                .addValue("limit", count);
+        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
+                .builder()
+                .fieldsPart("FILM_ID")
+                .fromPart("FILMS as f LEFT JOIN LIKES as l ON f.FILM_ID=l.FILM_ID")
+                .groupPart("FILM_ID")
+                .orderPart("ORDER BY COUNT(USER_ID)")
+                .build();
+
+        if (count != null) {
+            queryConstructor.setLimitPart(":limit");
+        }
 
         List<String> conditions = new ArrayList<>();
 
         if (genreId > 0) {
             conditions.add("f.FILM_ID IN (SELECT FILM_ID FROM GENRES WHERE GENRE_ID = :genreId)");
         }
+
         if (year > 0) {
             conditions.add("EXTRACT(YEAR FROM f.RELEASE_DATE) = :year");
         }
 
-        String condition = "";
         if (!conditions.isEmpty()) {
-            condition = "WHERE " + String.join(" AND ", conditions) + " ";
+            queryConstructor.setWherePart(String.join(" AND ", conditions));
         }
 
-        String limitCondition = "";
-        if (count > 0) {
-            limitCondition = " LIMIT :limit";
-        }
+        String query = queryConstructor.getSelectQuery();
 
-        String query = GET_FILMS_FROM_TABLE_SQL +
-                "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS COUNT_LIKES FROM LIKES GROUP BY FILM_ID) AS likes " +
-                "ON f.FILM_ID=likes.FILM_ID " +
-                condition +
-                "ORDER BY likes.COUNT_LIKES DESC" +
-                limitCondition;
+        var params = new MapSqlParameterSource()
+                .addValue("limit", count)
+                .addValue("genreId", genreId)
+                .addValue("year", year);
 
-        Map<Film, List<Genre>> filmsWithGenre =
-                namedParameterJdbcTemplate.query(query, params, new FilmExtractor());
+        List<Long> ids = namedParameterJdbcTemplate.query(query,
+                params,
+                (rs, numRow)->rs.getLong("FILM_ID"));
 
-        return prepareFilmList(filmsWithGenre);
+        return getFilms(ids);
     }
 }
