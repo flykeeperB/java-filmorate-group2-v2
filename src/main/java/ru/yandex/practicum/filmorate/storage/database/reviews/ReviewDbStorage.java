@@ -28,7 +28,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
 
     @Autowired
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate, ReviewMapper reviewMapper, EventStorage eventStorage) {
+    public ReviewDbStorage(JdbcTemplate jdbcTemplate, ReviewMapper reviewMapper) {
         this.jdbcTemplate = jdbcTemplate;
         this.reviewMapper = reviewMapper;
     }

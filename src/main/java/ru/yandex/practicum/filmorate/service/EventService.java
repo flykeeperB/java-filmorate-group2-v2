@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.ExtraFunctionalUserStorage;
@@ -24,9 +23,7 @@ public class EventService {
     }
 
     public List<Event> getAllByIdUser(long userId) {
-        if (!userStorage.contains(userId)) {
-            throw new NotFoundException("Пользователь не найден");
-        }
+        userStorage.findUserById(userId);
         return eventStorage.getEventById(userId);
     }
 

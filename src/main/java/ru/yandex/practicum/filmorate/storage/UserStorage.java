@@ -14,6 +14,4 @@ public interface UserStorage {
 
     User findUserById(long id);
 
-    boolean contains(long id);
-
 }

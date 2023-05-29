@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventDbStorage implements EventStorage {
 
-    private static final String sqInsert = "INSERT INTO events " +
+    private static final String SQL_QUERY_INSERT = "INSERT INTO events " +
             "(time_event,user_id,type_id,operation_id,entity_id)" +
             " VALUES (?,?,?,?,?)";
     private final JdbcTemplate jdbcTemplate;
@@ -47,8 +47,8 @@ public class EventDbStorage implements EventStorage {
         int opr = getIdOperation("ADD");
         LocalDateTime date = LocalDateTime.now();
 
-        jdbcTemplate.update(sqInsert, date, userId, type, opr, filmId);
-        log.info("Событие на добавление лайка фильма {} от пользователя {} успешно добавлена", filmId, userId);
+        jdbcTemplate.update(SQL_QUERY_INSERT, date, userId, type, opr, filmId);
+        log.info("Событие на добавление лайка фильма {} от пользователя {} успешно добавлено", filmId, userId);
     }
 
     @Override
@@ -58,8 +58,8 @@ public class EventDbStorage implements EventStorage {
         int opr = getIdOperation("REMOVE");
         LocalDateTime date = LocalDateTime.now();
 
-        jdbcTemplate.update(sqInsert, date, userId, type, opr, filmId);
-        log.info("Событие на удаление лайка фильма {} от пользователя {} успешно добавлена",
+        jdbcTemplate.update(SQL_QUERY_INSERT, date, userId, type, opr, filmId);
+        log.info("Событие на удаление лайка фильма {} от пользователя {} успешно добавлено",
                 filmId, userId);
     }
 
@@ -70,8 +70,8 @@ public class EventDbStorage implements EventStorage {
         int opr = getIdOperation("ADD");
         LocalDateTime date = LocalDateTime.now();
 
-        jdbcTemplate.update(sqInsert, date, userId, type, opr, friendId);
-        log.info("Событие на добавление в друзья пользователя {} пользователем {} успешно добавлена",
+        jdbcTemplate.update(SQL_QUERY_INSERT, date, userId, type, opr, friendId);
+        log.info("Событие на добавление в друзья пользователя {} пользователем {} успешно добавлено",
                 friendId, userId);
     }
 
@@ -82,8 +82,8 @@ public class EventDbStorage implements EventStorage {
         int opr = getIdOperation("REMOVE");
         LocalDateTime date = LocalDateTime.now();
 
-        jdbcTemplate.update(sqInsert, date, userId, type, opr, friendId);
-        log.info("Событие на удаление из друзей пользователя {} пользователем {} успешно добавлена",
+        jdbcTemplate.update(SQL_QUERY_INSERT, date, userId, type, opr, friendId);
+        log.info("Событие на удаление из друзей пользователя {} пользователем {} успешно добавлено",
                 friendId, userId);
     }
 
@@ -94,8 +94,8 @@ public class EventDbStorage implements EventStorage {
         int opr = getIdOperation("ADD");
         LocalDateTime date = LocalDateTime.now();
 
-        jdbcTemplate.update(sqInsert, date, userId, type, opr, reviewId);
-        log.info("Событие на добавление отзыва {} пользователем {} успешно добавлена",
+        jdbcTemplate.update(SQL_QUERY_INSERT, date, userId, type, opr, reviewId);
+        log.info("Событие на добавление отзыва {} пользователем {} успешно добавлено",
                 reviewId, userId);
     }
 
@@ -106,8 +106,8 @@ public class EventDbStorage implements EventStorage {
         int opr = getIdOperation("REMOVE");
         LocalDateTime date = LocalDateTime.now();
 
-        jdbcTemplate.update(sqInsert, date, userId, type, opr, reviewId);
-        log.info("Событие на удаление отзыва {} пользователем {} успешно добавлена",
+        jdbcTemplate.update(SQL_QUERY_INSERT, date, userId, type, opr, reviewId);
+        log.info("Событие на удаление отзыва {} пользователем {} успешно добавлено",
                 reviewId, userId);
     }
 
@@ -118,8 +118,8 @@ public class EventDbStorage implements EventStorage {
         int opr = getIdOperation("UPDATE");
         LocalDateTime date = LocalDateTime.now();
 
-        jdbcTemplate.update(sqInsert, date, userId, type, opr, reviewId);
-        log.info("Событие на обновление отзыва {} пользователем {} успешно добавлена",
+        jdbcTemplate.update(SQL_QUERY_INSERT, date, userId, type, opr, reviewId);
+        log.info("Событие на обновление отзыва {} пользователем {} успешно добавлено",
                 reviewId, userId);
     }
 
