@@ -120,7 +120,7 @@ public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements Extra
         List<String> conditions = new ArrayList<>();
 
         if (genreId > 0) {
-            conditions.add("f.FILM_ID IN (SELECT FILM_ID FROM GENRES WHERE GENRE_ID = :genreId)");
+            conditions.add("f.FILM_ID IN (SELECT gr.FILM_ID FROM GENRES as gr WHERE gr.GENRE_ID = :genreId)");
         }
 
         if (year > 0) {
