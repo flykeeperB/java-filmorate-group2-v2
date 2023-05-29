@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.database.events;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,11 +17,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventDbStorage implements EventStorage {
 
-    private final JdbcTemplate jdbcTemplate;
-
     private static final String sqInsert = "INSERT INTO events " +
             "(time_event,user_id,type_id,operation_id,entity_id)" +
             " VALUES (?,?,?,?,?)";
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public List<Event> getEventById(long id) {
@@ -50,7 +48,7 @@ public class EventDbStorage implements EventStorage {
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, filmId);
-        log.info ("Событие на добавление лайка фильма {} от пользователя {} успешно добавлена", filmId, userId);
+        log.info("Событие на добавление лайка фильма {} от пользователя {} успешно добавлена", filmId, userId);
     }
 
     @Override
@@ -61,8 +59,8 @@ public class EventDbStorage implements EventStorage {
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, filmId);
-        log.info ("Событие на удаление лайка фильма {} от пользователя {} успешно добавлена",
-                   filmId, userId);
+        log.info("Событие на удаление лайка фильма {} от пользователя {} успешно добавлена",
+                filmId, userId);
     }
 
     @Override
@@ -73,8 +71,8 @@ public class EventDbStorage implements EventStorage {
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, friendId);
-        log.info ("Событие на добавление в друзья пользователя {} пользователем {} успешно добавлена",
-                   friendId, userId);
+        log.info("Событие на добавление в друзья пользователя {} пользователем {} успешно добавлена",
+                friendId, userId);
     }
 
     @Override
@@ -85,7 +83,7 @@ public class EventDbStorage implements EventStorage {
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, friendId);
-        log.info ("Событие на удаление из друзей пользователя {} пользователем {} успешно добавлена",
+        log.info("Событие на удаление из друзей пользователя {} пользователем {} успешно добавлена",
                 friendId, userId);
     }
 
@@ -97,7 +95,7 @@ public class EventDbStorage implements EventStorage {
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, reviewId);
-        log.info ("Событие на добавление отзыва {} пользователем {} успешно добавлена",
+        log.info("Событие на добавление отзыва {} пользователем {} успешно добавлена",
                 reviewId, userId);
     }
 
@@ -109,7 +107,7 @@ public class EventDbStorage implements EventStorage {
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, reviewId);
-        log.info ("Событие на удаление отзыва {} пользователем {} успешно добавлена",
+        log.info("Событие на удаление отзыва {} пользователем {} успешно добавлена",
                 reviewId, userId);
     }
 
@@ -121,7 +119,7 @@ public class EventDbStorage implements EventStorage {
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, reviewId);
-        log.info ("Событие на обновление отзыва {} пользователем {} успешно добавлена",
+        log.info("Событие на обновление отзыва {} пользователем {} успешно добавлена",
                 reviewId, userId);
     }
 
