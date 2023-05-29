@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewLikesStorage;
 
@@ -15,11 +16,15 @@ public class ReviewService {
 
     private final ReviewLikesStorage reviewLikesStorage;
 
+    private final EventStorage eventStorage;
+
     @Autowired
     public ReviewService(@Qualifier("reviewDbStorage") ReviewStorage reviewStorage,
-                         @Qualifier("reviewLikesDbStorage") ReviewLikesStorage reviewLikesStorage) {
+                         @Qualifier("reviewLikesDbStorage") ReviewLikesStorage reviewLikesStorage,
+                         EventStorage eventStorage) {
         this.reviewStorage = reviewStorage;
         this.reviewLikesStorage = reviewLikesStorage;
+        this.eventStorage = eventStorage;
     }
 
     public List<Review> getAll(Long limit) {
@@ -35,14 +40,20 @@ public class ReviewService {
     }
 
     public Review create(Review review) {
-        return reviewStorage.add(review);
+        Review resultReview = reviewStorage.add(review);
+        eventStorage.addEventOnAddReview(resultReview.getUserId(), resultReview.getReviewId());
+        return resultReview;
     }
 
     public void delete(Long id) {
+        Review resultReview = get(id);
+        eventStorage.addEventOnDeleteReview(resultReview.getUserId(), resultReview.getReviewId());
         reviewStorage.delete(id);
     }
 
     public Review update(Review review) {
+        Review resultReview = get(review.getReviewId());
+        eventStorage.addEventOnUpdateReview(resultReview.getUserId(), resultReview.getReviewId());
         return reviewStorage.update(review);
     }
 

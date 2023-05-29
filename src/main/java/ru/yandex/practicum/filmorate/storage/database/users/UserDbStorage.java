@@ -78,5 +78,4 @@ public class UserDbStorage implements UserStorage {
         }
         return user;
     }
-
 }
