@@ -33,4 +33,8 @@ public class UserService {
         return userStorage.findUserById(id);
     }
 
+    public void deleteUserById(long userId) {
+        userStorage.deleteUserById(userId);
+    }
+
 }

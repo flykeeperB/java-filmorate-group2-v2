@@ -78,4 +78,17 @@ public class UserDbStorage implements UserStorage {
         }
         return user;
     }
+
+    @Override
+    public void deleteUserById(long userId) {
+        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
+                new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
+        if (userExist == null) {
+            throw new NotFoundException("Такого пользователя нет");
+        } else {
+            String sql = "DELETE FROM USERS WHERE USER_ID=?";
+            jdbcTemplate.update(sql, userId);
+        }
+    }
+
 }
