@@ -166,7 +166,7 @@ create table IF NOT EXISTS EVENTS
     OPERATION_ID INTEGER   not null,
     ENTITY_ID    INTEGER   not null,
     constraint USER_ID_FK
-        foreign key (USER_ID) references USERS,
+        foreign key (USER_ID) references USERS ON DELETE CASCADE,
     constraint TYPE_ID_FK_2
         foreign key (TYPE_ID) references EVENT_TYPE,
     constraint OPERATION_ID_FK
