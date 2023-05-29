@@ -1,22 +1,25 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.ExtraFunctionalUserService;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
 @RestController
-@AllArgsConstructor
 @RequestMapping(value = "/users")
 public class UserController {
-    private final UserService userService;
+    private final ExtraFunctionalUserService userService;
+
+    @Autowired
+    public UserController(ExtraFunctionalUserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public List<User> findAll() {
@@ -110,8 +113,4 @@ public class UserController {
         userService.deleteFriend(userId, friendId);
     }
 
-    @GetMapping("/{id}/feed")
-    public List<Event> getEventsByIdUser(@PathVariable("id") Long userId) {
-        return userService.getEventsByIdUser(userId);
-    }
 }

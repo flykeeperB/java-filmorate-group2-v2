@@ -58,9 +58,9 @@ CREATE TABLE IF NOT EXISTS GENRES
     constraint GENRES_PK
         primary key (FILM_ID, GENRE_ID),
     constraint GENRES_FILMS_FILM_ID_FK
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
     constraint GENRES_LIST_OF_GENRES_GENRE_ID_FK
-        foreign key (GENRE_ID) references LIST_OF_GENRES
+        foreign key (GENRE_ID) references LIST_OF_GENRES ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS DIRECTORS
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS DIRECTORS
     constraint DIRECTORS_PK
         primary key (DIRECTOR_ID, FILM_ID, DIRECTOR_ID),
     constraint DIRECTORS_FILMS_FILM_ID_FK
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
     constraint DIRECTORS_LIST_OF_DIRECTORS_DIRECTOR_ID_FK
         foreign key (DIRECTOR_ID) references LIST_OF_DIRECTORS ON DELETE CASCADE
 );
@@ -93,9 +93,9 @@ CREATE TABLE IF NOT EXISTS LIKES
     constraint LIKES_PK
         primary key (FILM_ID, USER_ID),
     constraint LIKES_FILMS_FILM_ID_FK
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
     constraint LIKES_USERS_USER_ID_FK
-        foreign key (USER_ID) references USERS
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS FRIENDSHIP
@@ -106,9 +106,9 @@ CREATE TABLE IF NOT EXISTS FRIENDSHIP
     constraint FRIENDSHIP_PK
         primary key (USER1_ID, USER2_ID),
     constraint FRIENDSHIP_USERS_USER1_ID_FK
-        foreign key (USER1_ID) references USERS,
+        foreign key (USER1_ID) references USERS ON DELETE CASCADE,
     constraint FRIENDSHIP_USERS_USER2_ID_FK_2
-        foreign key (USER2_ID) references USERS
+        foreign key (USER2_ID) references USERS ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS REVIEWS

@@ -12,6 +12,10 @@ public interface FilmStorage {
 
     List<Film> findAllFilms();
 
+    List<Film> getFilms(List<Long> ids);
+
+    List<Film> getFilms(List<Long> ids, String orderFields);
+
     Film findFilmById(long id);
 
     List<Film> getPopularFilms(int count);
