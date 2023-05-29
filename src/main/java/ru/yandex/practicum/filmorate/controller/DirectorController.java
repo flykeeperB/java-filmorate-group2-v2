@@ -5,10 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -54,20 +52,6 @@ public class DirectorController {
     @DeleteMapping("/directors/{id}")
     public void deleteDirector(@PathVariable Long id) {
         directorService.deleteDirector(id);
-    }
-
-    @GetMapping("/films/director/{id}")
-    public List<Film> getListFilmsByDirector(@PathVariable Long id,
-                                             @RequestParam String sortBy) {
-        List<Film> films = new ArrayList<>();
-        if (sortBy.equals("likes")) {
-            films = directorService.getListOfFilmsByDirectorSortByLikes(id);
-        }
-        if (sortBy.equals("year")) {
-            films = directorService.getListOfFilmsByDirectorSortByYear(id);
-        }
-
-        return films;
     }
 
 }

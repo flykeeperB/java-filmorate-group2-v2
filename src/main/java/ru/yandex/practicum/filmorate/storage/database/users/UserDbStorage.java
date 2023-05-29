@@ -13,20 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//класс DAO - объект доступа к данным. Необходимо написать
-// соответствующие мапперы и методы, позволяющие сохранять
-// пользователей в БД и получать их из неё
-
 @Component("userDbStorage")
 @Repository
 public class UserDbStorage implements UserStorage {
 
     static final String FIND_USER_BY_ID_IN_TABLE_SQL = "SELECT * FROM USERS WHERE USER_ID=?";
 
-    private final JdbcTemplate jdbcTemplate;
-
-  //  @Autowired
-    //private UserMapper userMapper;
+    protected final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
@@ -87,54 +80,6 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void addFriend(long userId, long friendId) {
-        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
-                new Object[]{friendId}, new UserMapper()).stream().findAny().orElse(null);
-        if (userExist == null) {
-            throw new NotFoundException("Такого пользователя нет");
-        } else {
-            String sqlQuery = "SELECT count(*) FROM FRIENDSHIP where USER1_ID=? AND USER2_ID=?";
-            boolean exists2 = false;
-            int count3 = jdbcTemplate.queryForObject(sqlQuery, new Object[]{userId, friendId}, Integer.class);
-            int count4 = jdbcTemplate.queryForObject(sqlQuery, new Object[]{friendId, userId}, Integer.class);
-            exists2 = count3 > 0 || count4 > 0;
-            if (exists2 == false) {
-                jdbcTemplate.update("INSERT INTO FRIENDSHIP (USER1_ID, USER2_ID, STATUS) VALUES (?, ?, ?)", friendId, userId, "unconfirmed");
-            } else if (count3 > 0) {
-                jdbcTemplate.update("UPDATE FRIENDSHIP SET STATUS = ? WHERE USER2_ID=? AND USER1_ID=?", "confirmed", friendId, userId);
-            } else if (count4 > 0) {
-                jdbcTemplate.update("UPDATE FRIENDSHIP SET STATUS = ? WHERE USER2_ID=? AND USER1_ID=?", "confirmed", userId, friendId);
-            }
-        }
-    }
-
-    @Override
-    public void deleteFriend(long userId, long friendId) {
-        String sql = "DELETE FROM FRIENDSHIP WHERE USER1_ID=? AND USER2_ID=?;";
-        jdbcTemplate.update(sql, friendId, userId);
-    }
-
-    @Override
-    public List<User> findAllFriends(long userId) {
-        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
-                new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
-        if (userExist == null) {
-            throw new NotFoundException("Такого пользователя нет");
-        } else {
-            String sql = "SELECT * FROM USERS WHERE USER_ID IN (SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=?)";
-            return jdbcTemplate.query(sql, new Object[]{userId}, new UserMapper());
-        }
-    }
-
-    @Override
-    public List<User> findCommonFriends(long userId, long otherUserId) {
-        String sql = "SELECT * FROM USERS WHERE USER_ID=" +
-                "(SELECT * FROM(SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=? " +
-                "UNION ALL SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=?) GROUP BY USER1_ID HAVING COUNT(USER1_ID)=2)";
-        return jdbcTemplate.query(sql, new Object[]{userId, otherUserId}, new UserMapper());
-    }
-
-    @Override
     public void deleteUserById(long userId) {
         User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
                 new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
@@ -145,4 +90,5 @@ public class UserDbStorage implements UserStorage {
             jdbcTemplate.update(sql, userId);
         }
     }
+
 }
