@@ -71,7 +71,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
         try {
             Number newId = insertRequest.executeAndReturnKey(parameters);
-            log.info("Добавлен отзыв, id=" + newId.toString());
+            log.info("Добавлен отзыв, id=" + newId);
             return get(newId.longValue());
         } catch (RuntimeException e) {
             log.error(e.getMessage());

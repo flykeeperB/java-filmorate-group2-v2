@@ -8,11 +8,13 @@ public interface UserStorage {
     //методы добавления, удаления и модификации объектов.
     User addUser(User user);
 
-    User updateUser(long id, User user);
+    User updateUser(Long id, User user);
 
     List<User> findAllUser();
 
-    User findUserById(long id);
+    List<User> getUsers(List<Long> ids);
 
-    void deleteUserById(long userId);
+    User findUserById(Long id);
+
+    void deleteUserById(Long userId);
 }

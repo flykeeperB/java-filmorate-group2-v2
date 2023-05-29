@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -55,5 +57,22 @@ public class MainSqlQueryConstructor implements SqlQueryConstructor {
         }
 
         return sb.toString();
+    }
+
+    public void setFieldsPart(List<String> fields) {
+
+        this.fieldsPart = fields.toString();
+    }
+
+    public static class MainSqlQueryConstructorBuilder {
+        public MainSqlQueryConstructorBuilder fieldsPart(List<String> fields) {
+            this.fieldsPart = String.join(", ", fields);
+            return this;
+        }
+
+        public MainSqlQueryConstructorBuilder fieldsPart(String fields) {
+            this.fieldsPart = fields;
+            return this;
+        }
     }
 }
