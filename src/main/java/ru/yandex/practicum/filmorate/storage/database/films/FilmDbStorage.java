@@ -128,14 +128,14 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(long filmId, Film film) {
-        Film filmExist = jdbcTemplate.query(FIND_FILM_BY_ID_IN_TABLE_SQL,
-                new Object[]{filmId}, new FilmMapper()).stream().findAny().orElse(null);
-        if (filmExist == null) {
-            throw new NotFoundException("Фильма c таким id нет");
-        } else {
-            String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? "
-                    + "WHERE FILM_ID=?";
 
+        findFilmById(film.getId());
+
+
+        String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? "
+                + "WHERE FILM_ID=?";
+
+        try {
             jdbcTemplate.update(
                     sqlQuery,
                     film.getName(),
