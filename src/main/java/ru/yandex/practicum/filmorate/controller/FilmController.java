@@ -124,9 +124,9 @@ public class FilmController {
         return films;
     }
 
-
     @DeleteMapping("/{id}")
     public void deleteUserById(
             @PathVariable Long id) {
         filmService.deleteUserById(id);
-    }}
+    }
+}
