@@ -18,12 +18,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.database.MainSqlQueryConstructor;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -32,22 +27,11 @@ import java.util.stream.Collectors;
 @Repository
 public class FilmDbStorage implements FilmStorage {
 
-    protected static final String FIELDS_PART_OF_SELECT_QUERY =
-            "f.FILM_ID, " +
-                    "f.FILM_NAME, " +
-                    "f.DESCRIPTION," +
-                    "f.RELEASE_DATE, " +
-                    "f.DURATION, " +
-                    "f.MPA_ID, " +
-                    "m.MPA_NAME";
+    protected static final String FIELDS_PART_OF_SELECT_QUERY = "f.FILM_ID, " + "f.FILM_NAME, " + "f.DESCRIPTION," + "f.RELEASE_DATE, " + "f.DURATION, " + "f.MPA_ID, " + "m.MPA_NAME";
 
-    protected static final String FROM_PART_OF_SELECT_QUERY =
-            "FILMS AS f " +
-                    "LEFT JOIN LIST_OF_MPAS AS m ON f.MPA_ID = m.MPA_ID " +
-                    "LEFT JOIN LIKES as l ON l.FILM_ID = f.FILM_ID";
+    protected static final String FROM_PART_OF_SELECT_QUERY = "FILMS AS f " + "LEFT JOIN LIST_OF_MPAS AS m ON f.MPA_ID = m.MPA_ID " + "LEFT JOIN LIKES as l ON l.FILM_ID = f.FILM_ID";
 
-    protected static final String GROUP_PART_OF_SELECT_QUERY =
-            "f.FILM_ID";
+    protected static final String GROUP_PART_OF_SELECT_QUERY = "f.FILM_ID";
 
     protected final JdbcTemplate jdbcTemplate;
 
@@ -56,8 +40,7 @@ public class FilmDbStorage implements FilmStorage {
     protected final UserStorage userStorage;
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate,
-                         @Qualifier("userDbStorage") UserStorage userStorage) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate, @Qualifier("userDbStorage") UserStorage userStorage) {
         this.jdbcTemplate = jdbcTemplate;
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
         this.userStorage = userStorage;
@@ -97,9 +80,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        SimpleJdbcInsert insertIntoFilm = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("FILMS")
-                .usingGeneratedKeyColumns("FILM_ID");
+        SimpleJdbcInsert insertIntoFilm = new SimpleJdbcInsert(jdbcTemplate).withTableName("FILMS").usingGeneratedKeyColumns("FILM_ID");
         final Map<String, Object> parameters = new HashMap<>();
         parameters.put("FILM_NAME", film.getName());
         parameters.put("DESCRIPTION", film.getDescription());
@@ -132,18 +113,10 @@ public class FilmDbStorage implements FilmStorage {
         findFilmById(film.getId());
 
 
-        String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? "
-                + "WHERE FILM_ID=?";
+        String sqlQuery = "UPDATE FILMS SET FILM_NAME=?, DESCRIPTION=?, RELEASE_DATE=?, DURATION=?, MPA_ID=? " + "WHERE FILM_ID=?";
 
         try {
-            jdbcTemplate.update(
-                    sqlQuery,
-                    film.getName(),
-                    film.getDescription(),
-                    film.getReleaseDate(),
-                    film.getDuration(),
-                    film.getMpa().getId(),
-                    filmId);
+            jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), filmId);
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
@@ -182,12 +155,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilms(List<Long> ids, String orderFields) {
 
-        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
-                .builder()
-                .fieldsPart(FIELDS_PART_OF_SELECT_QUERY)
-                .fromPart(FROM_PART_OF_SELECT_QUERY)
-                .groupPart(GROUP_PART_OF_SELECT_QUERY)
-                .build();
+        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor.builder().fieldsPart(FIELDS_PART_OF_SELECT_QUERY).fromPart(FROM_PART_OF_SELECT_QUERY).groupPart(GROUP_PART_OF_SELECT_QUERY).build();
 
         if (ids != null) {
             if (ids.isEmpty()) {
@@ -248,22 +216,13 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count) {
 
-        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
-                .builder()
-                .fieldsPart("FILM_ID")
-                .fromPart("LIKES")
-                .groupPart("FILM_ID")
-                .orderPart("ORDER BY COUNT(USER_ID)")
-                .limitPart(":limit")
-                .build();
+        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor.builder().fieldsPart("FILM_ID").fromPart("LIKES").groupPart("FILM_ID").orderPart("ORDER BY COUNT(USER_ID)").limitPart(":limit").build();
 
         String query = queryConstructor.getSelectQuery();
 
         var params = new MapSqlParameterSource().addValue("limit", count);
 
-        List<Long> ids = namedParameterJdbcTemplate.query(query,
-                params,
-                (rs, numRow) -> rs.getLong("FILM_ID"));
+        List<Long> ids = namedParameterJdbcTemplate.query(query, params, (rs, numRow) -> rs.getLong("FILM_ID"));
 
         return getFilms(ids);
     }
@@ -288,21 +247,13 @@ public class FilmDbStorage implements FilmStorage {
 
     private Map<Long, List<Genre>> getGenresForFilms(List<Film> films) {
 
-        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
-                .builder()
-                .fieldsPart("g.FILM_ID, g.GENRE_ID, lg.GENRE_NAME")
-                .fromPart("GENRES as g LEFT JOIN LIST_OF_GENRES as lg " +
-                        "ON g.GENRE_ID = lg.GENRE_ID")
-                .wherePart("g.FILM_ID IN ( :ids )")
-                .build();
+        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor.builder().fieldsPart("g.FILM_ID, g.GENRE_ID, lg.GENRE_NAME").fromPart("GENRES as g LEFT JOIN LIST_OF_GENRES as lg " + "ON g.GENRE_ID = lg.GENRE_ID").wherePart("g.FILM_ID IN ( :ids )").build();
 
         String query = queryConstructor.getSelectQuery();
 
         var params = new MapSqlParameterSource();
         if (films != null) {
-            params.addValue("ids", films.stream()
-                    .map(Film::getId)
-                    .collect(Collectors.toList()));
+            params.addValue("ids", films.stream().map(Film::getId).collect(Collectors.toList()));
         }
 
         Map<Long, List<Genre>> result = new HashMap<>();
@@ -314,8 +265,7 @@ public class FilmDbStorage implements FilmStorage {
                     genre.setId(rs.getLong("GENRE_ID"));
                     genre.setName(rs.getString("GENRE_NAME"));
 
-                    List<Genre> genresOfFilm = subResult
-                            .getOrDefault(rs.getLong("FILM_ID"), new ArrayList<>());
+                    List<Genre> genresOfFilm = subResult.getOrDefault(rs.getLong("FILM_ID"), new ArrayList<>());
                     genresOfFilm.add(genre);
                     subResult.put(rs.getLong("FILM_ID"), genresOfFilm);
                 }
@@ -334,21 +284,13 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private Map<Long, List<Director>> getDirectorsForFilms(List<Film> films) {
-        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
-                .builder()
-                .fieldsPart("d.FILM_ID, ld.DIRECTOR_ID, ld.DIRECTOR_NAME")
-                .fromPart("DIRECTORS as d LEFT JOIN LIST_OF_DIRECTORS as ld " +
-                        "ON d.DIRECTOR_ID = ld.DIRECTOR_ID")
-                .wherePart("d.FILM_ID IN ( :ids )")
-                .build();
+        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor.builder().fieldsPart("d.FILM_ID, ld.DIRECTOR_ID, ld.DIRECTOR_NAME").fromPart("DIRECTORS as d LEFT JOIN LIST_OF_DIRECTORS as ld " + "ON d.DIRECTOR_ID = ld.DIRECTOR_ID").wherePart("d.FILM_ID IN ( :ids )").build();
 
         String query = queryConstructor.getSelectQuery();
 
         var params = new MapSqlParameterSource();
         if (films != null) {
-            params.addValue("ids", films.stream()
-                    .map(Film::getId)
-                    .collect(Collectors.toList()));
+            params.addValue("ids", films.stream().map(Film::getId).collect(Collectors.toList()));
         }
 
         Map<Long, List<Director>> result = new HashMap<>();
@@ -360,8 +302,7 @@ public class FilmDbStorage implements FilmStorage {
                     director.setId(rs.getLong("DIRECTOR_ID"));
                     director.setName(rs.getString("DIRECTOR_NAME"));
 
-                    List<Director> directorsOfFilm = subResult
-                            .getOrDefault(rs.getLong("FILM_ID"), new ArrayList<>());
+                    List<Director> directorsOfFilm = subResult.getOrDefault(rs.getLong("FILM_ID"), new ArrayList<>());
                     directorsOfFilm.add(director);
 
                     subResult.put(rs.getLong("FILM_ID"), directorsOfFilm);
@@ -377,20 +318,13 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private Map<Long, List<Long>> getLikesForFilms(List<Film> films) {
-        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
-                .builder()
-                .fieldsPart("FILM_ID, USER_ID")
-                .fromPart("LIKES")
-                .wherePart("FILM_ID IN (:ids)")
-                .build();
+        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor.builder().fieldsPart("FILM_ID, USER_ID").fromPart("LIKES").wherePart("FILM_ID IN (:ids)").build();
 
         String query = queryConstructor.getSelectQuery();
 
         var params = new MapSqlParameterSource();
         if (films != null) {
-            params.addValue("ids", films.stream()
-                    .map(Film::getId)
-                    .collect(Collectors.toList()));
+            params.addValue("ids", films.stream().map(Film::getId).collect(Collectors.toList()));
         }
 
         Map<Long, List<Long>> result = new HashMap<>();
@@ -398,8 +332,7 @@ public class FilmDbStorage implements FilmStorage {
             result = namedParameterJdbcTemplate.query(query, params, (rs) -> {
                 Map<Long, List<Long>> subResult = new HashMap<>();
                 while (rs.next()) {
-                    List<Long> likesOfFilm =
-                            subResult.getOrDefault(rs.getLong("FILM_ID"), new ArrayList<>());
+                    List<Long> likesOfFilm = subResult.getOrDefault(rs.getLong("FILM_ID"), new ArrayList<>());
 
                     likesOfFilm.add(rs.getLong("USER_ID"));
 
@@ -426,4 +359,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, filmId);
     }
 
+    public List<Film> getUserRecommendations(long userId) {
+        return null;
+    }
 }

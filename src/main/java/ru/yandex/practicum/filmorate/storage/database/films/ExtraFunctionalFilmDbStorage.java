@@ -217,4 +217,44 @@ public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements Extra
 
         return getFilms(ids, "COUNT(l.USER_ID) DESC");
     }
+
+    @Override
+    public List<Film> getFilmsRecommendations(Long userId) {
+
+        userStorage.findUserById(userId);
+
+        MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
+                .builder()
+                .fieldsPart("f.FILM_ID")
+                .fromPart("LIKES as l1 " +
+                        "JOIN LIKES as l2 " +
+                        "ON l2.FILM_ID = l1.FILM_ID " +
+                        "JOIN LIKES as l3 " +
+                        "ON l2.FILM_ID = l3.FILM_ID " +
+                        "LEFT JOIN LIKES as l4 " +
+                        "ON l4.FILM_ID = l3.FILM_ID AND l4.USER_ID = :userId " +
+
+                        "LEFT JOIN FILMS as f " +
+                        "ON l3.FILM_ID = f.FILM_ID")
+                .groupPart("l3.FILM_ID, f.FILM_ID ")
+                .wherePart("l4.FILM_ID IS NULL OR l4.USER_ID IS NULL")
+                .build();
+
+        String query = queryConstructor.getSelectQuery();
+
+        var params = new MapSqlParameterSource()
+                .addValue("userId", userId);
+
+        List<Long> ids = new ArrayList<>();
+        try {
+            ids = namedParameterJdbcTemplate.query(query,
+                    params,
+                    (rs, numRow) -> rs.getLong("FILM_ID"));
+        } catch (RuntimeException e) {
+            log.error(e.getMessage());
+        }
+
+        return getFilms(ids, "COUNT(*) DESC");
+
+    }
 }
