@@ -43,9 +43,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User updateUser(long userId, User user) {
-        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
-                new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
-        if (userExist == null) {
+        if (!contains(userId)) {
             throw new NotFoundException("Такого пользователя нет");
         } else {
             String sqlQuery = "UPDATE USERS SET EMAIL=?, LOGIN=?, USER_NAME=?, BIRTHDAY=? WHERE USER_ID=?";
@@ -68,15 +66,21 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User findUserById(long userId) {
         User user;
-        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
-                new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
-        if (userExist == null) {
+        if (!contains(userId)) {
             throw new NotFoundException("Такого пользователя нет");
         } else {
             user = jdbcTemplate.query("SELECT * FROM USERS WHERE USER_ID=?", new Object[]{userId}, new UserMapper())
                     .stream().findAny().orElse(null);
         }
         return user;
+    }
+
+    @Override
+    public boolean contains(long id) {
+        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
+                new Object[]{id}, new UserMapper()).stream().findAny().orElse(null);
+
+        return userExist != null;
     }
 
 }

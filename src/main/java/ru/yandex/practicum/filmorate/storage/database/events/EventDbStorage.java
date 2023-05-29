@@ -1,8 +1,9 @@
-package ru.yandex.practicum.filmorate.dao;
+package ru.yandex.practicum.filmorate.storage.database.events;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Event;
@@ -12,8 +13,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class EventDbStorage implements EventStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -35,79 +37,92 @@ public class EventDbStorage implements EventStorage {
 
         SqlRowSet eventRows = jdbcTemplate.queryForRowSet("select 1 from events where user_id = ?", id);
         if (eventRows.next()) {
-            events = jdbcTemplate.query(sqlQ, eventRowMapper(), id);
+            events = jdbcTemplate.query(sqlQ, new EventMapper(), id);
         }
         return events;
     }
 
     @Override
-    public void addLike(long filmId, long userId) {
+    public void addEventOnAddLike(long filmId, long userId) {
 
         int type = getIdType("LIKE");
         int opr = getIdOperation("ADD");
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, filmId);
+        log.info ("Событие на добавление лайка фильма {} от пользователя {} успешно добавлена", filmId, userId);
     }
 
     @Override
-    public void deleteLike(long filmId, long userId) {
+    public void addEventOnDeleteLike(long filmId, long userId) {
 
         int type = getIdType("LIKE");
         int opr = getIdOperation("REMOVE");
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, filmId);
+        log.info ("Событие на удаление лайка фильма {} от пользователя {} успешно добавлена",
+                   filmId, userId);
     }
 
     @Override
-    public void addFriend(long userId, long friendId) {
+    public void addEventOnAddFriend(long userId, long friendId) {
 
         int type = getIdType("FRIEND");
         int opr = getIdOperation("ADD");
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, friendId);
+        log.info ("Событие на добавление в друзья пользователя {} пользователем {} успешно добавлена",
+                   friendId, userId);
     }
 
     @Override
-    public void deleteFriend(long userId, long friendId) {
+    public void addEventOnDeleteFriend(long userId, long friendId) {
 
         int type = getIdType("FRIEND");
         int opr = getIdOperation("REMOVE");
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, friendId);
+        log.info ("Событие на удаление из друзей пользователя {} пользователем {} успешно добавлена",
+                friendId, userId);
     }
 
     @Override
-    public void addReview(long userId, long reviewId) {
+    public void addEventOnAddReview(long userId, long reviewId) {
 
         int type = getIdType("REVIEW");
         int opr = getIdOperation("ADD");
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, reviewId);
+        log.info ("Событие на добавление отзыва {} пользователем {} успешно добавлена",
+                reviewId, userId);
     }
 
     @Override
-    public void deleteReview(long userId, long reviewId) {
+    public void addEventOnDeleteReview(long userId, long reviewId) {
 
         int type = getIdType("REVIEW");
         int opr = getIdOperation("REMOVE");
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, reviewId);
+        log.info ("Событие на удаление отзыва {} пользователем {} успешно добавлена",
+                reviewId, userId);
     }
 
     @Override
-    public void updateReview(long userId, long reviewId) {
+    public void addEventOnUpdateReview(long userId, long reviewId) {
 
         int type = getIdType("REVIEW");
         int opr = getIdOperation("UPDATE");
         LocalDateTime date = LocalDateTime.now();
 
         jdbcTemplate.update(sqInsert, date, userId, type, opr, reviewId);
+        log.info ("Событие на обновление отзыва {} пользователем {} успешно добавлена",
+                reviewId, userId);
     }
 
     private Integer getIdType(String nameType) {
@@ -118,19 +133,5 @@ public class EventDbStorage implements EventStorage {
     private Integer getIdOperation(String nameOperation) {
         return jdbcTemplate.queryForObject("SELECT operation_id FROM operation " +
                 "WHERE operation_name = ?", Integer.class, nameOperation);
-    }
-
-    private RowMapper<Event> eventRowMapper() {
-        return (rs, rowNum) -> {
-            Event event = new Event();
-            event.setEventId(rs.getInt("event_id"));
-            event.setTimestamp(rs.getTimestamp("time_event").toInstant().toEpochMilli());
-            event.setUserId(rs.getInt("user_id"));
-            event.setEventType(rs.getString("type_name"));
-            event.setOperation(rs.getString("operation_name"));
-            event.setEntityId(rs.getInt("entity_id"));
-
-            return event;
-        };
     }
 }
