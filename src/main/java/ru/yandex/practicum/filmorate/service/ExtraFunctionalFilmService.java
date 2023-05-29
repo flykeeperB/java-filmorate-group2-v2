@@ -52,4 +52,8 @@ public class ExtraFunctionalFilmService extends FilmService {
     public List<Film> getFilmsByDirectorSortByLikes(long id) {
         return filmStorage.getFilmsByDirectorSortByLikes(id);
     }
+
+    public List<Film> getUserRecommendations(long userId) {
+        return filmStorage.getFilmsRecommendations(userId);
+    }
 }

@@ -426,4 +426,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, filmId);
     }
 
+    public List<Film> getUserRecommendations(long userId){
+        return null;
+    }
 }

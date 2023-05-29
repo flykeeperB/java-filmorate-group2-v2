@@ -4,7 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.ExtraFunctionalFilmService;
 import ru.yandex.practicum.filmorate.service.ExtraFunctionalUserService;
 
 import java.time.LocalDate;
@@ -15,10 +17,12 @@ import java.util.List;
 @RequestMapping(value = "/users")
 public class UserController {
     private final ExtraFunctionalUserService userService;
+    private final ExtraFunctionalFilmService filmService;
 
     @Autowired
-    public UserController(ExtraFunctionalUserService userService) {
+    public UserController(ExtraFunctionalUserService userService, ExtraFunctionalFilmService filmService) {
         this.userService = userService;
+        this.filmService = filmService;
     }
 
     @GetMapping
@@ -118,5 +122,11 @@ public class UserController {
             @PathVariable Long id) {
         userService.deleteUserById(id);
     }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getUserRecommendations(@PathVariable long id) {
+        return filmService.getUserRecommendations(id);
+    }
+
 
 }

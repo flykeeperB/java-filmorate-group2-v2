@@ -15,4 +15,6 @@ public interface ExtraFunctionalFilmStorage extends FilmStorage {
     List<Film> getFilmsByDirectorSortByYear(Long id);
 
     List<Film> getFilmsByDirectorSortByLikes(Long id);
+
+    List<Film> getFilmsRecommendations(Long userId);
 }
