@@ -48,14 +48,8 @@ public class ExtraFunctionalUserDbStorage extends UserDbStorage implements Extra
 
     @Override
     public List<User> findAllFriends(long userId) {
-        User userExist = jdbcTemplate.query(FIND_USER_BY_ID_IN_TABLE_SQL,
-                new Object[]{userId}, new UserMapper()).stream().findAny().orElse(null);
-        if (userExist == null) {
-            throw new NotFoundException("Такого пользователя нет");
-        } else {
-            String sql = "SELECT * FROM USERS WHERE USER_ID IN (SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=?)";
-            return jdbcTemplate.query(sql, new Object[]{userId}, new UserMapper());
-        }
+        String sql = "SELECT * FROM USERS WHERE USER_ID IN (SELECT USER1_ID FROM FRIENDSHIP WHERE USER2_ID=?)";
+        return jdbcTemplate.query(sql, new Object[]{userId}, new UserMapper());
     }
 
     @Override

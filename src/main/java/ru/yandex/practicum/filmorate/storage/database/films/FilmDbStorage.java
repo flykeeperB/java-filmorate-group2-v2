@@ -230,6 +230,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.setLikes(likes.getOrDefault(film.getId(), new ArrayList<>()));
             }
         }
+
         return result;
     }
 
@@ -255,7 +256,9 @@ public class FilmDbStorage implements FilmStorage {
                 .orderPart("ORDER BY COUNT(USER_ID)")
                 .limitPart(":limit")
                 .build();
-String query = queryConstructor.getSelectQuery();
+
+        String query = queryConstructor.getSelectQuery();
+
         var params = new MapSqlParameterSource().addValue("limit", count);
 
         List<Long> ids = namedParameterJdbcTemplate.query(query,
@@ -409,18 +412,6 @@ String query = queryConstructor.getSelectQuery();
         }
 
         return result;
-    }
-
-    @Override
-    public void deleteFilmById(long filmId) {
-        List<Film> films = getFilms(List.of(filmId));
-
-        if (films.isEmpty()) {
-            throw new NotFoundException("Фильма c таким id нет");
-        }
-
-        String sql = "DELETE FROM FILMS WHERE FILM_ID=?";
-        jdbcTemplate.update(sql, filmId);
     }
 
 }
