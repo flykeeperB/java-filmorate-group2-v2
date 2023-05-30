@@ -7,8 +7,8 @@ import java.util.Objects;
 
 @Data
 public class Genre {
-    long id;
-    String name;
+    private long id;
+    private String name;
 
     @Override
     public boolean equals(Object o) {

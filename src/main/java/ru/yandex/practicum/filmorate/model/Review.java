@@ -11,22 +11,14 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class Review {
     private Long reviewId;
-
     @NotBlank
     private String content;
-
     @NotNull
     @JsonProperty("isPositive")
     private Boolean isPositive;
-
     @NotNull
     private Long userId;
-
     @NotNull
     private Long filmId;
-
-
     private Long useful;
-
-
 }

@@ -12,6 +12,10 @@ import java.util.List;
 
 @Repository
 public class MpaDbStorage implements MpaStorage {
+    private static final String SQL_GET_ALL_MPAS = "SELECT * FROM LIST_OF_MPAS";
+    private static final String SQL_GET_MPA_ID = "SELECT MPA_ID FROM LIST_OF_MPAS WHERE MPA_ID=?";
+    private static final String SQL_GET_ALL_MPA = "SELECT * FROM LIST_OF_MPAS WHERE MPA_ID=?";
+
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -24,21 +28,19 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public List<Mpa> findAllMpas() {
-        String sql = "SELECT * FROM LIST_OF_MPAS";
-        return jdbcTemplate.query(sql, mpaMapper);
+        return jdbcTemplate.query(SQL_GET_ALL_MPAS, mpaMapper);
     }
 
     @Override
     public Mpa findMpaById(long mpaId) {
         Mpa mpa = new Mpa();
         try {
-            String sql = "SELECT MPA_ID FROM LIST_OF_MPAS WHERE MPA_ID=?";
             boolean exists = false;
-            int count = jdbcTemplate.queryForObject(sql, new Object[]{mpaId}, Integer.class);
+            int count = jdbcTemplate.queryForObject(SQL_GET_MPA_ID, new Object[]{mpaId}, Integer.class);
             exists = count > 0;
 
             if (exists) {
-                mpa = jdbcTemplate.query("SELECT * FROM LIST_OF_MPAS WHERE MPA_ID=?", new Object[]{mpaId}, mpaMapper)
+                mpa = jdbcTemplate.query(SQL_GET_ALL_MPA, new Object[]{mpaId}, mpaMapper)
                         .stream().findAny().orElse(null);
             }
         } catch (EmptyResultDataAccessException e) {
