@@ -3,15 +3,13 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import java.util.Objects;
 
 @Data
 public class Director {
-    long id;
-    @NotEmpty
+    private long id;
     @NotBlank
-    String name;
+    private String name;
 
     @Override
     public boolean equals(Object o) {

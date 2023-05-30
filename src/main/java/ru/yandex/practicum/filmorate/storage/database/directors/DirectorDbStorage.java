@@ -17,8 +17,10 @@ import java.util.Map;
 @Repository
 @Component("directorDbStorage")
 public class DirectorDbStorage implements DirectorStorage {
-    static final String FIND_DIRECTOR_IN_TABLE_SQL = "SELECT * FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
-
+    private static final String SQL_GET_ALL_DIRECTOR = "SELECT * FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
+    private static final String SQL_UPDATE_DIRECTORS = "UPDATE LIST_OF_DIRECTORS SET DIRECTOR_NAME=? WHERE DIRECTOR_ID=?";
+    private static final String SQL_DELETE_DIRECTOR = "DELETE FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
+    private static final String SQL_GET_ALL_DIRECTORS = "SELECT * FROM LIST_OF_DIRECTORS";
     private final JdbcTemplate jdbcTemplate;
 
     protected final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -34,13 +36,12 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public List<Director> findAllDirectors() {
-        String sql = "SELECT * FROM LIST_OF_DIRECTORS";
-        return jdbcTemplate.query(sql, directorMapper);
+        return jdbcTemplate.query(SQL_GET_ALL_DIRECTORS, directorMapper);
     }
 
     @Override
     public Director findDirectorById(Long directorId) {
-        Director director = jdbcTemplate.query(FIND_DIRECTOR_IN_TABLE_SQL,
+        Director director = jdbcTemplate.query(SQL_GET_ALL_DIRECTOR,
                 new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
         if (director == null) {
             throw new NotFoundException("Режиссёра c таким id нет");
@@ -63,22 +64,15 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Director updateDirector(Long directorId, Director director) {
-
         findDirectorById(directorId);
-
-        String sqlQuery = "UPDATE LIST_OF_DIRECTORS SET DIRECTOR_NAME=? WHERE DIRECTOR_ID=?";
-        jdbcTemplate.update(sqlQuery, director.getName(), directorId);
-
+        jdbcTemplate.update(SQL_UPDATE_DIRECTORS, director.getName(), directorId);
         return findDirectorById(directorId);
     }
 
     @Override
     public void deleteDirector(Long id) {
         findDirectorById(id);
-
-        String sqlQuery = "DELETE FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
-
-        jdbcTemplate.update(sqlQuery, id);
+        jdbcTemplate.update(SQL_DELETE_DIRECTOR, id);
     }
 
 }

@@ -39,6 +39,20 @@ public class FilmDbStorage implements FilmStorage {
     protected static final String FROM_PART_OF_SELECT_QUERY = "FILMS AS f " + "LEFT JOIN LIST_OF_MPAS AS m ON f.MPA_ID = m.MPA_ID " + "LEFT JOIN LIKES as l ON l.FILM_ID = f.FILM_ID";
 
     protected static final String GROUP_PART_OF_SELECT_QUERY = "f.FILM_ID";
+    protected static final String SQL_DELETE_GENRE = "DELETE FROM GENRES WHERE FILM_ID=?";
+    protected static final String SQL_INSERT_GENRE = "INSERT INTO GENRES (FILM_ID, GENRE_ID) VALUES (?,?)";
+    protected static final String SQL_DELETE_DIRECTOR = "DELETE FROM DIRECTORS WHERE FILM_ID=?";
+    protected static final String SQL_UPDATE_FILMS = "UPDATE FILMS SET " +
+            "FILM_NAME=?, " +
+            "DESCRIPTION=?, " +
+            "RELEASE_DATE=?, " +
+            "DURATION=?, " +
+            "MPA_ID=? " +
+            "WHERE FILM_ID=?";
+    protected static final String SQL_INSERT_DIRECTOR = "INSERT INTO DIRECTORS (DIRECTOR_ID, FILM_ID) VALUES (?,?)";
+    protected static final String SQL_DELETE_LIKES = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
+    protected static final String SQL_INSERT_LIKES = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
+    protected static final String SQL_DELETE_FILM = "DELETE FROM FILMS WHERE FILM_ID=?";
 
     protected final JdbcTemplate jdbcTemplate;
 
@@ -55,34 +69,26 @@ public class FilmDbStorage implements FilmStorage {
 
     private void addGenres(Long idGenre, Long idFilm) {
         try {
-            String sqlQuery = "INSERT INTO GENRES (FILM_ID, GENRE_ID) VALUES (?,?)";
-
-            jdbcTemplate.update(sqlQuery, idFilm, idGenre);
+            jdbcTemplate.update(SQL_INSERT_GENRE, idFilm, idGenre);
         } catch (DataIntegrityViolationException e) {
             log.error(e.getMessage());
         }
     }
 
     private void deleteGenre(Long idFilm) {
-        String sqlQuery = "DELETE FROM GENRES WHERE FILM_ID=?";
-
-        jdbcTemplate.update(sqlQuery, idFilm);
+        jdbcTemplate.update(SQL_DELETE_GENRE, idFilm);
     }
 
     private void addDirectors(Long idDirector, Long idFilm) {
         try {
-            String sqlQuery = "INSERT INTO DIRECTORS (DIRECTOR_ID, FILM_ID) VALUES (?,?)";
-
-            jdbcTemplate.update(sqlQuery, idDirector, idFilm);
+            jdbcTemplate.update(SQL_INSERT_DIRECTOR, idDirector, idFilm);
         } catch (DataIntegrityViolationException e) {
             log.error(e.getMessage());
         }
     }
 
     private void deleteDirectors(Long idFilm) {
-        String sqlQuery = "DELETE FROM DIRECTORS WHERE FILM_ID=?";
-
-        jdbcTemplate.update(sqlQuery, idFilm);
+       jdbcTemplate.update(SQL_DELETE_DIRECTOR, idFilm);
     }
 
     @Override
@@ -98,40 +104,26 @@ public class FilmDbStorage implements FilmStorage {
         parameters.put("MPA_ID", film.getMpa().getId());
         Number newId = insertIntoFilm.executeAndReturnKey(parameters);
         film.setId(newId.longValue());
-
         Set<Genre> genres = film.getGenres();
         if (!genres.equals(new HashSet<>())) {
             for (Genre genre : genres) {
                 addGenres(genre.getId(), film.getId());
             }
         }
-
         Set<Director> directors = film.getDirectors();
         if (!directors.equals(new HashSet<>())) {
             for (Director director : directors) {
                 addDirectors(director.getId(), film.getId());
             }
         }
-
         return film;
     }
 
     @Override
     public Film updateFilm(Long filmId, Film film) {
-
         findFilmById(film.getId());
-
-        String sqlQuery = "UPDATE " +
-                "FILMS SET " +
-                "FILM_NAME=?, " +
-                "DESCRIPTION=?, " +
-                "RELEASE_DATE=?, " +
-                "DURATION=?, " +
-                "MPA_ID=? " +
-                "WHERE FILM_ID=?";
-
         try {
-            jdbcTemplate.update(sqlQuery,
+            jdbcTemplate.update(SQL_UPDATE_FILMS,
                     film.getName(),
                     film.getDescription(),
                     film.getReleaseDate(),
@@ -141,18 +133,14 @@ public class FilmDbStorage implements FilmStorage {
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
-
         deleteGenre(film.getId());
-
         Set<Genre> genres = film.getGenres();
         if (!genres.equals(new HashSet<>())) {
             for (Genre genre : genres) {
                 addGenres(genre.getId(), film.getId());
             }
         }
-
         deleteDirectors(film.getId());
-
         Set<Director> directors = film.getDirectors();
         if (!directors.equals(new HashSet<>())) {
             for (Director director : directors) {
@@ -174,14 +162,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilms(List<Long> ids, String orderFields) {
-
         MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
                 .builder()
                 .fieldsPart(FIELDS_PART_OF_SELECT_QUERY)
                 .fromPart(FROM_PART_OF_SELECT_QUERY)
                 .groupPart(GROUP_PART_OF_SELECT_QUERY)
                 .build();
-
         if (ids != null) {
             if (ids.isEmpty()) {
                 return new ArrayList<>();
@@ -189,60 +175,47 @@ public class FilmDbStorage implements FilmStorage {
                 queryConstructor.setWherePart("f.FILM_ID IN (:ids)");
             }
         }
-
         if (orderFields != null) {
             if (!orderFields.isEmpty()) {
                 queryConstructor.setOrderPart(orderFields);
             }
         }
-
         String query = queryConstructor.getSelectQuery();
-
         var params = new MapSqlParameterSource();
         if (ids != null) {
             params.addValue("ids", ids);
         }
-
         List<Film> result = new ArrayList<>();
-
         try {
-
             result = namedParameterJdbcTemplate
                     .query(query, params, new FilmMapper());
-
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
-
         if (!result.isEmpty()) {
             Map<Long, List<Genre>> genres = getGenresForFilms(result);
             Map<Long, List<Director>> directors = getDirectorsForFilms(result);
             Map<Long, List<Long>> likes = getLikesForFilms(result);
-
             for (Film film : result) {
                 film.setGenres(genres.getOrDefault(film.getId(), new ArrayList<>()));
                 film.setDirectors(directors.getOrDefault(film.getId(), new ArrayList<>()));
                 film.setLikes(likes.getOrDefault(film.getId(), new ArrayList<>()));
             }
         }
-
         return result;
     }
 
     @Override
     public Film findFilmById(Long filmId) {
         List<Film> films = getFilms(List.of(filmId));
-
         if (films.isEmpty()) {
             throw new NotFoundException("Фильма c таким id нет");
         }
-
         return films.get(0);
     }
 
     @Override
     public List<Film> getPopularFilms(Long count) {
-
         MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
                 .builder()
                 .fieldsPart("FILM_ID")
@@ -251,11 +224,8 @@ public class FilmDbStorage implements FilmStorage {
                 .orderPart("ORDER BY COUNT(USER_ID)")
                 .limitPart(":limit")
                 .build();
-
         String query = queryConstructor.getSelectQuery();
-
         var params = new MapSqlParameterSource().addValue("limit", count);
-
         List<Long> ids = namedParameterJdbcTemplate
                 .query(query,
                         params,
@@ -268,27 +238,21 @@ public class FilmDbStorage implements FilmStorage {
     public void deleteLike(Long filmId, Long userId) {
         userStorage.findUserById(userId);
         findFilmById(filmId);
-
-        String sqlQuery = "DELETE FROM LIKES WHERE FILM_ID=? AND USER_ID=?";
-        jdbcTemplate.update(sqlQuery, filmId, userId);
+        jdbcTemplate.update(SQL_DELETE_LIKES, filmId, userId);
     }
 
     @Override
     public void addLike(Long filmId, Long userId) {
-
         userStorage.findUserById(userId);
         findFilmById(filmId);
-
-        String sql = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
         try {
-            jdbcTemplate.update(sql, filmId, userId);
+            jdbcTemplate.update(SQL_INSERT_LIKES, filmId, userId);
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
     }
 
     private Map<Long, List<Genre>> getGenresForFilms(List<Film> films) {
-
         MainSqlQueryConstructor queryConstructor = MainSqlQueryConstructor
                 .builder()
                 .fieldsPart(List.of(
@@ -300,9 +264,7 @@ public class FilmDbStorage implements FilmStorage {
                         "ON g.GENRE_ID = lg.GENRE_ID")
                 .wherePart("g.FILM_ID IN ( :ids )")
                 .build();
-
         String query = queryConstructor.getSelectQuery();
-
         var params = new MapSqlParameterSource();
         if (films != null) {
             params.addValue("ids", films
@@ -310,7 +272,6 @@ public class FilmDbStorage implements FilmStorage {
                     .map(Film::getId)
                     .collect(Collectors.toList()));
         }
-
         Map<Long, List<Genre>> result = new HashMap<>();
         try {
             result = namedParameterJdbcTemplate.query(query, params, (rs) -> {
@@ -319,7 +280,6 @@ public class FilmDbStorage implements FilmStorage {
                     Genre genre = new Genre();
                     genre.setId(rs.getLong("GENRE_ID"));
                     genre.setName(rs.getString("GENRE_NAME"));
-
                     List<Genre> genresOfFilm = subResult
                             .getOrDefault(rs.getLong("FILM_ID"), new ArrayList<>());
                     genresOfFilm.add(genre);
@@ -327,15 +287,12 @@ public class FilmDbStorage implements FilmStorage {
                 }
                 return subResult;
             });
-
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
-
         if (result == null) {
             return new HashMap<>();
         }
-
         return result;
     }
 
@@ -347,9 +304,7 @@ public class FilmDbStorage implements FilmStorage {
                         "ON d.DIRECTOR_ID = ld.DIRECTOR_ID")
                 .wherePart("d.FILM_ID IN ( :ids )")
                 .build();
-
         String query = queryConstructor.getSelectQuery();
-
         var params = new MapSqlParameterSource();
         if (films != null) {
             params.addValue("ids", films
@@ -357,7 +312,6 @@ public class FilmDbStorage implements FilmStorage {
                     .map(Film::getId)
                     .collect(Collectors.toList()));
         }
-
         Map<Long, List<Director>> result = new HashMap<>();
         try {
             result = namedParameterJdbcTemplate.query(query, params, (rs) -> {
@@ -366,20 +320,16 @@ public class FilmDbStorage implements FilmStorage {
                     Director director = new Director();
                     director.setId(rs.getLong("DIRECTOR_ID"));
                     director.setName(rs.getString("DIRECTOR_NAME"));
-
                     List<Director> directorsOfFilm = subResult
                             .getOrDefault(rs.getLong("FILM_ID"), new ArrayList<>());
                     directorsOfFilm.add(director);
-
                     subResult.put(rs.getLong("FILM_ID"), directorsOfFilm);
                 }
-
                 return subResult;
             });
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
-
         return result;
     }
 
@@ -390,9 +340,7 @@ public class FilmDbStorage implements FilmStorage {
                 .fromPart("LIKES")
                 .wherePart("FILM_ID IN (:ids)")
                 .build();
-
         String query = queryConstructor.getSelectQuery();
-
         var params = new MapSqlParameterSource();
         if (films != null) {
             params.addValue("ids", films
@@ -400,7 +348,6 @@ public class FilmDbStorage implements FilmStorage {
                     .map(Film::getId)
                     .collect(Collectors.toList()));
         }
-
         Map<Long, List<Long>> result = new HashMap<>();
         try {
             result = namedParameterJdbcTemplate.query(query, params, (rs) -> {
@@ -408,9 +355,7 @@ public class FilmDbStorage implements FilmStorage {
                 while (rs.next()) {
                     List<Long> likesOfFilm = subResult
                             .getOrDefault(rs.getLong("FILM_ID"), new ArrayList<>());
-
                     likesOfFilm.add(rs.getLong("USER_ID"));
-
                     subResult.put(rs.getLong("FILM_ID"), likesOfFilm);
                 }
                 return subResult;
@@ -418,19 +363,15 @@ public class FilmDbStorage implements FilmStorage {
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
-
         return result;
     }
 
     @Override
     public void deleteFilmById(Long filmId) {
         List<Film> films = getFilms(List.of(filmId));
-
         if (films.isEmpty()) {
             throw new NotFoundException("Фильма c таким id нет");
         }
-
-        String sql = "DELETE FROM FILMS WHERE FILM_ID=?";
-        jdbcTemplate.update(sql, filmId);
+        jdbcTemplate.update(SQL_DELETE_FILM, filmId);
     }
 }

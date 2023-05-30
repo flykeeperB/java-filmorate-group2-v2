@@ -20,6 +20,8 @@ import java.util.Map;
 @Component("reviewDbStorage")
 @Repository
 public class ReviewDbStorage implements ReviewStorage {
+    private static final String SQL_UPDATE_REVIEW = "UPDATE REVIEWS SET CONTENT=?, IS_POSITIVE=? WHERE FILM_ID=?";
+    private static final String SQL_DELETE_REVIEW = "DELETE FROM REVIEWS WHERE REVIEW_ID=?";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -108,13 +110,8 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review update(Review review) {
         validateId(review.getReviewId());
 
-        String query = "UPDATE REVIEWS SET " +
-                "CONTENT=?, " +
-                "IS_POSITIVE=? " +
-                "WHERE FILM_ID=?";
-
         try {
-            int status = jdbcTemplate.update(query,
+            int status = jdbcTemplate.update(SQL_UPDATE_REVIEW,
                     review.getContent(),
                     review.getIsPositive(),
                     review.getReviewId());
@@ -153,10 +150,8 @@ public class ReviewDbStorage implements ReviewStorage {
     public void delete(Long id) {
         validateId(id);
 
-        String query = "DELETE FROM REVIEWS WHERE REVIEW_ID=?";
-
         try {
-            int rows = jdbcTemplate.update(query, id);
+            int rows = jdbcTemplate.update(SQL_DELETE_REVIEW, id);
             if (rows > 0) {
                 log.info("Запись удалена.");
             } else {

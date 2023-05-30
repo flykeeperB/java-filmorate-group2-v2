@@ -22,22 +22,24 @@ public class GenreDbStorage implements GenreStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    private static final String SQL_GET_ALL_GENRES = "SELECT * FROM LIST_OF_GENRES";
+    private static final String SQL_GET_GENRE_ID = "SELECT GENRE_ID FROM LIST_OF_GENRES WHERE GENRE_ID=?";
+    private static final String SQL_GET_ALL_GENRE = "SELECT * FROM LIST_OF_GENRES WHERE GENRE_ID=?";
+
     @Override
     public List<Genre> findAllGenres() {
-        String sql = "SELECT * FROM LIST_OF_GENRES";
-        return jdbcTemplate.query(sql, genreMapper);
+        return jdbcTemplate.query(SQL_GET_ALL_GENRES, genreMapper);
     }
 
     @Override
     public Genre findGenreById(long genreId) {
         Genre genre = new Genre();
         try {
-            String sql = "SELECT GENRE_ID FROM LIST_OF_GENRES WHERE GENRE_ID=?";
             boolean exists = false;
-            int count = jdbcTemplate.queryForObject(sql, new Object[]{genreId}, Integer.class);
+            int count = jdbcTemplate.queryForObject(SQL_GET_GENRE_ID, new Object[]{genreId}, Integer.class);
             exists = count > 0;
             if (exists) {
-                genre = jdbcTemplate.query("SELECT * FROM LIST_OF_GENRES WHERE GENRE_ID=?", new Object[]{genreId}, genreMapper)
+                genre = jdbcTemplate.query(SQL_GET_ALL_GENRE, new Object[]{genreId}, genreMapper)
                         .stream().findAny().orElse(null);
             }
         } catch (EmptyResultDataAccessException e) {
