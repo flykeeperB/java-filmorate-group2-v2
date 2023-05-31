@@ -36,6 +36,99 @@ public class FilmControllerTest {
             .create();
 
     @Test
+    void createIncorrectName() {
+        Film film = new Film();
+        film.setName(null);
+        film.setDescription("exampleDescription");
+        film.setReleaseDate(LocalDate.now().minusYears(10));
+        film.setDuration(120);
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void createIncorrectDescription() {
+        Film film = new Film();
+        film.setName("exampleName");
+        film.setDescription("Пятеро друзей ( комик-группа «Шарло»), " +
+                "приезжают в город Бризуль. Здесь они хотят разыскать господина Огюста Куглова, " +
+                "который задолжал им деньги, а именно 20 миллионов. о Куглов, " +
+                "который за время «своего отсутствия», стал кандидатом Коломбани.");
+        film.setReleaseDate(LocalDate.now().minusYears(10));
+        film.setDuration(120);
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void createIncorrectDuration() {
+        Film film = new Film();
+        film.setName("exampleName");
+        film.setDescription("exampleDescription");
+        film.setReleaseDate(LocalDate.now().minusYears(10));
+        film.setDuration(-120);
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void updateIncorrectName() {
+        Film film = new Film();
+        film.setName("exampleName");
+        film.setDescription("exampleDescription");
+        film.setReleaseDate(LocalDate.now().minusYears(10));
+        film.setDuration(120);
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+        Film film2 = new Film();
+        film.setName(null);
+        film.setDescription("exampleDescription");
+        film.setReleaseDate(LocalDate.now().minusYears(10));
+        film.setDuration(120);
+        HttpEntity<Film> entity = new HttpEntity<>(film2);
+        ResponseEntity<Film> response2 = restTemplate.exchange("/films", HttpMethod.PUT, entity, Film.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response2.getStatusCode());
+    }
+
+    @Test
+    void updateIncorrectDescription() {
+        Film film = new Film();
+        film.setName("exampleName");
+        film.setDescription("exampleDescription");
+        film.setReleaseDate(LocalDate.now().minusYears(10));
+        film.setDuration(120);
+        restTemplate.postForLocation("/films", film);
+        Film film2 = new Film();
+        film.setName("exampleName");
+        film.setDescription("Пятеро друзей ( комик-группа «Шарло»), " +
+                "приезжают в город Бризуль. Здесь они хотят разыскать господина Огюста Куглова, " +
+                "который задолжал им деньги, а именно 20 миллионов. о Куглов, " +
+                "который за время «своего отсутствия», стал кандидатом Коломбани.");
+        film.setReleaseDate(LocalDate.now().minusYears(10));
+        film.setDuration(120);
+        HttpEntity<Film> entity = new HttpEntity<>(film2);
+        ResponseEntity<Film> response2 = restTemplate.exchange("/films", HttpMethod.PUT, entity, Film.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response2.getStatusCode());
+    }
+
+    @Test
+    void updateIncorrectDuration() {
+        Film film = new Film();
+        film.setName("exampleName");
+        film.setDescription("exampleDescription");
+        film.setReleaseDate(LocalDate.now().minusYears(10));
+        film.setDuration(120);
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+        Film film2 = new Film();
+        film.setName("exampleName");
+        film.setDescription("exampleDescription");
+        film.setReleaseDate(LocalDate.now().minusYears(10));
+        film.setDuration(-120);
+        HttpEntity<Film> entity = new HttpEntity<>(film2);
+        ResponseEntity<Film> response2 = restTemplate.exchange("/films", HttpMethod.PUT, entity, Film.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response2.getStatusCode());
+    }
+
+    @Test
     void createFilm() {
         String jsonFilm = "{" +
                 "  \"name\": \"nisi eiusmod\",\n" +
