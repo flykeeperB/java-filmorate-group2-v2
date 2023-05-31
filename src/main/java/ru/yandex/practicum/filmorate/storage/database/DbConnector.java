@@ -32,50 +32,53 @@ public final class DbConnector<T> {
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
-    public <E> List<E> queryWithParamsByCustomType (String query,
-                                    MapSqlParameterSource params,
-                                    RowMapper<E> rowMapper) {
+    public <E> List<E> queryWithParamsByCustomType(String query,
+                                                   MapSqlParameterSource params,
+                                                   RowMapper<E> rowMapper) {
         try {
-            log.info("Вызов запроса: "+query);
+            log.info("Вызов запроса: " + query);
             return namedParameterJdbcTemplate.query(query, params, rowMapper);
         } catch (RuntimeException e) {
             log.error(e.getMessage());
-        };
+        }
+        ;
         return new ArrayList<>();
     }
 
-    public <E> Map<Long,List<E>> queryWithParamsByCustomTypeExtractor (String query,
-                                                    MapSqlParameterSource params,
-                                                    ResultSetExtractor<Map<Long,List<E>>> extractor) {
+    public <E> Map<Long, List<E>> queryWithParamsByCustomTypeExtractor(String query,
+                                                                       MapSqlParameterSource params,
+                                                                       ResultSetExtractor<Map<Long, List<E>>> extractor) {
         try {
-            log.info("Вызов запроса: "+query);
+            log.info("Вызов запроса: " + query);
             return namedParameterJdbcTemplate.query(query, params, extractor);
         } catch (RuntimeException e) {
             log.error(e.getMessage());
-        };
+        }
+        ;
         return new HashMap<>();
     }
 
-    public List<T> queryWithParams (String query,
-                                    MapSqlParameterSource params,
-                                    RowMapper<T> rowMapper) {
-        return this.<T>queryWithParamsByCustomType(query,params, rowMapper);
+    public List<T> queryWithParams(String query,
+                                   MapSqlParameterSource params,
+                                   RowMapper<T> rowMapper) {
+        return this.<T>queryWithParamsByCustomType(query, params, rowMapper);
     }
 
-    public int runWithParams (String query,
-                                    MapSqlParameterSource params) {
+    public int runWithParams(String query,
+                             MapSqlParameterSource params) {
         try {
-            log.info("Вызов запроса: "+query);
+            log.info("Вызов запроса: " + query);
             return namedParameterJdbcTemplate.update(query, params);
         } catch (RuntimeException e) {
             log.error(e.getMessage());
-        };
+        }
+        ;
         return 0;
     }
 
-    public Long create (String table,
-                        String generatedKeyColumns,
-                        Map<String, Object> parameters) {
+    public Long create(String table,
+                       String generatedKeyColumns,
+                       Map<String, Object> parameters) {
 
         SimpleJdbcInsert insertRequest = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName(table)
