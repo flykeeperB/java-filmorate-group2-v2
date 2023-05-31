@@ -35,7 +35,7 @@ public class ExtraFunctionalFilmDbStorage extends FilmDbStorage implements Extra
 
     protected static final String SQL_COMMON = "SELECT f.FILM_ID FROM FILMS as f " +
             "LEFT JOIN LIKES as l ON f.FILM_ID=l.FILM_ID " +
-            "WHERE "+
+            "WHERE " +
             "USER_ID = :userId OR USER_ID = :friendId GROUP BY f.FILM_ID HAVING COUNT(*) > 1";
 
     protected static final String SQL_POPULAR = SQL_SELECT_SOURCE +
