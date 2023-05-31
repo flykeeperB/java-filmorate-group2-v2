@@ -71,8 +71,6 @@ public class ReviewLikesDbStorage implements ReviewLikesStorage {
         }
     }
 
-    ;
-
     private void deleteEval(Long reviewId, Long userId, int eval) {
         try {
             int rows = jdbcTemplate.update(DELETE_EVAL_QUERY, reviewId, userId, eval);

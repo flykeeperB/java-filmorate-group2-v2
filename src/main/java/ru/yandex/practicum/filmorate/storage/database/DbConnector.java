@@ -24,7 +24,7 @@ public final class DbConnector<T> {
 
     private final JdbcTemplate jdbcTemplate;
 
-    protected final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
     public DbConnector(JdbcTemplate jdbcTemplate) {
@@ -41,7 +41,7 @@ public final class DbConnector<T> {
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
-        ;
+
         return new ArrayList<>();
     }
 
@@ -54,14 +54,14 @@ public final class DbConnector<T> {
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
-        ;
+
         return new HashMap<>();
     }
 
     public List<T> queryWithParams(String query,
                                    MapSqlParameterSource params,
                                    RowMapper<T> rowMapper) {
-        return this.<T>queryWithParamsByCustomType(query, params, rowMapper);
+        return this.queryWithParamsByCustomType(query, params, rowMapper);
     }
 
     public int runWithParams(String query,
@@ -72,7 +72,7 @@ public final class DbConnector<T> {
         } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
-        ;
+
         return 0;
     }
 
@@ -84,13 +84,11 @@ public final class DbConnector<T> {
                 .withTableName(table)
                 .usingGeneratedKeyColumns(generatedKeyColumns);
 
-        Long result = 0L;
+        long result = 0L;
         try {
             result = insertRequest.executeAndReturnKey(parameters).longValue();
             log.info("В таблицу " + table + " добавлена запись id=" + result);
         } catch (DataIntegrityViolationException e) {
-            log.error(e.getMessage());
-        } catch (RuntimeException e) {
             log.error(e.getMessage());
         }
 

@@ -23,10 +23,6 @@ public class FilmService {
         return filmStorage.findAllFilms();
     }
 
-    public List<Film> getPopularFilms(Long count) {
-        return filmStorage.getPopularFilms(count);
-    }
-
     public Film createFilm(Film film) {
         return filmStorage.addFilm(film);
     }
