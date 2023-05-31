@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
@@ -23,12 +22,12 @@ public class EventDbStorage implements EventStorage {
             " VALUES (?,?,?,?,?)";
     private static final String SQL_GET_OPERATION_ID = "SELECT OPERATION_ID FROM OPERATION WHERE OPERATION_NAME = ?";
     private static final String SQL_GET_TYPE_ID = "SELECT TYPE_ID FROM EVENT_TYPE WHERE TYPE_NAME = ?";
-    private static String SQL_GET_EVENTS = "SELECT EVENT_ID, TIME_EVENT, USER_ID, " +
+    private static final String SQL_GET_EVENTS = "SELECT EVENT_ID, TIME_EVENT, USER_ID, " +
             "TYPE_NAME, OPERATION_NAME, ENTITY_ID " +
             "FROM (((SELECT * FROM EVENTS WHERE USER_ID=?) AS e " +
             "LEFT JOIN EVENT_TYPE AS et ON e.TYPE_ID = et.TYPE_ID) AS e_et " +
             "LEFT JOIN OPERATION AS o ON e_et.OPERATION_ID = o.OPERATION_ID)";
-    private static String SQL_CHECK_EVENT = "SELECT 1 FROM EVENTS WHERE USER_ID = ?";
+    private static final String SQL_CHECK_EVENT = "SELECT 1 FROM EVENTS WHERE USER_ID = ?";
     private final JdbcTemplate jdbcTemplate;
 
     @Override

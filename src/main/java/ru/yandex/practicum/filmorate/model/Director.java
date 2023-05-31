@@ -16,7 +16,7 @@ public class Director {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Director director = (Director) o;
-        return id == director.id;
+        return id.equals(director.id);
     }
 
     @Override
