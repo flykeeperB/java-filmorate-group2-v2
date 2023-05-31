@@ -7,7 +7,7 @@ import java.util.Objects;
 
 @Data
 public class Director {
-    private long id;
+    private Long id;
     @NotBlank
     private String name;
 

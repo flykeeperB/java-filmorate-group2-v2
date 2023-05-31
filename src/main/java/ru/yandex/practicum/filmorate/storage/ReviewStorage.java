@@ -1,20 +1,21 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 
 public interface ReviewStorage {
-    Review add(Review review);
+    Review addReview(Review review);
 
-    Review get(Long id);
+    Review findReviewById(Long reviewId);
 
-    List<Review> getAll(Long limitCount);
+    List<Review> getReviews(Long limitCount);
 
-    Review update(Review review);
+    Review updateReview(Review review);
 
-    List<Review> getByFilmId(Long id, Long limitCount);
+    List<Review> getByFilmId(Long filmId, Long limitCount);
 
-    void delete(Long id);
+    void deleteReview(Long reviewId);
 
 }

@@ -2,163 +2,192 @@ package ru.yandex.practicum.filmorate.storage.database.reviews;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.database.DbConnector;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@Component("reviewDbStorage")
-@Repository
+@Repository("reviewDbStorage")
 public class ReviewDbStorage implements ReviewStorage {
-    private static final String SQL_UPDATE_REVIEW = "UPDATE REVIEWS SET CONTENT=?, IS_POSITIVE=? WHERE FILM_ID=?";
-    private static final String SQL_DELETE_REVIEW = "DELETE FROM REVIEWS WHERE REVIEW_ID=?";
 
-    private final JdbcTemplate jdbcTemplate;
+    private static final String SQL_REVIEWS_TABLE = "REVIEWS";
+    private static final String SQL_REVIEWS_TABLE_ALIAS = "r";
+    private static final String SQL_REVIEWS_TABLE_AND_ALIAS = SQL_REVIEWS_TABLE+" as "+SQL_REVIEWS_TABLE_ALIAS;
+    private static final String SQL_REVIEWS_KEY_FIELD = "REVIEW_ID";
 
-    private final ReviewMapper reviewMapper;
+    private static final String SQL_UPDATE_REVIEW = "UPDATE " + SQL_REVIEWS_TABLE_AND_ALIAS + " SET " +
+            SQL_REVIEWS_TABLE_ALIAS+".CONTENT=:content, " +
+            SQL_REVIEWS_TABLE_ALIAS+".IS_POSITIVE=:isPositive " +
+            "WHERE "+SQL_REVIEWS_TABLE_ALIAS+"."+SQL_REVIEWS_KEY_FIELD+"=:reviewId";
 
+    private static final String SQL_DELETE_REVIEW = "DELETE FROM " +
+            SQL_REVIEWS_TABLE_AND_ALIAS +
+            " WHERE "+SQL_REVIEWS_TABLE_ALIAS+"."+SQL_REVIEWS_KEY_FIELD+"=:reviewId";
+
+    protected static final String SQL_ORDER = "ORDER BY cast("+SQL_REVIEWS_TABLE_ALIAS+".USEFUL AS INT) DESC";
+    protected static final String SQL_LIMIT = "LIMIT :limit";
+
+    protected static final String SQL_GET_REVIEWS = "SELECT "+
+            SQL_REVIEWS_TABLE_ALIAS+".REVIEW_ID, " +
+            SQL_REVIEWS_TABLE_ALIAS+".USER_ID, " +
+            SQL_REVIEWS_TABLE_ALIAS+".FILM_ID, " +
+            SQL_REVIEWS_TABLE_ALIAS+".CONTENT, " +
+            SQL_REVIEWS_TABLE_ALIAS+".IS_POSITIVE, " +
+            SQL_REVIEWS_TABLE_ALIAS+".USEFUL " +
+            "FROM " + SQL_REVIEWS_TABLE_AND_ALIAS;
+
+    protected static final String SQL_GET_REVIEWS_FROM_IDS = SQL_GET_REVIEWS +
+            " WHERE "+SQL_REVIEWS_TABLE_ALIAS+".REVIEW_ID IN ( :ids ) "+SQL_ORDER;
+
+    protected static final String SQL_GET_REVIEWS_BY_FILM_ID = SQL_GET_REVIEWS +
+            " WHERE "+SQL_REVIEWS_TABLE_ALIAS+".FILM_ID = :filmId " + SQL_ORDER + " " + SQL_LIMIT;
+
+    private final DbConnector<Review> dbConnector;
+
+    protected final UserStorage userStorage;
+
+    protected final FilmStorage filmStorage;
 
     @Autowired
-    public ReviewDbStorage(JdbcTemplate jdbcTemplate, ReviewMapper reviewMapper) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.reviewMapper = reviewMapper;
-    }
-
-    private String getBaseSelectSQL() {
-        return "SELECT " +
-                "REVIEW_ID, " +
-                "USER_ID, " +
-                "FILM_ID, " +
-                "CONTENT, " +
-                "IS_POSITIVE, " +
-                "USEFUL " +
-                "FROM REVIEWS";
-    }
-
-    private void validateId(Long id) {
-        if (id == null) {
-            throw new ValidationException("Идентификатор не задан.");
-        }
-        if (id < 1) {
-            throw new NotFoundException("Запись по неверному идентификатору не может быть найдена.");
-        }
+    public ReviewDbStorage(DbConnector<Review> dbConnector,
+                           @Qualifier("userDbStorage") UserStorage userStorage,
+                           @Qualifier("filmDbStorage") FilmStorage filmStorage
+    ) {
+        this.dbConnector = dbConnector;
+        this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
     }
 
     @Override
-    public Review add(Review review) {
-        validateId(review.getUserId());
-        validateId(review.getFilmId());
+    public Review addReview(Review review) {
+        filmStorage.findFilmById(review.getFilmId());
+        userStorage.findUserById(review.getUserId());
 
-        SimpleJdbcInsert insertRequest = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("REVIEWS")
-                .usingGeneratedKeyColumns("REVIEW_ID");
+        final Map<String, Object> params = new HashMap<>();
 
-        final Map<String, Object> parameters = new HashMap<>();
+        params.put("USER_ID", review.getUserId());
+        params.put("FILM_ID", review.getFilmId());
+        params.put("CONTENT", review.getContent());
+        params.put("IS_POSITIVE", review.getIsPositive());
+        params.put("USEFUL", 0);
 
-        parameters.put("USER_ID", review.getUserId());
-        parameters.put("FILM_ID", review.getFilmId());
-        parameters.put("CONTENT", review.getContent());
-        parameters.put("IS_POSITIVE", review.getIsPositive());
-        parameters.put("USEFUL", 0);
+        Long id = dbConnector.create(SQL_REVIEWS_TABLE,
+                SQL_REVIEWS_KEY_FIELD,
+                params);
 
-        try {
-            Number newId = insertRequest.executeAndReturnKey(parameters);
-            log.info("Добавлен отзыв, id=" + newId);
-            return get(newId.longValue());
-        } catch (RuntimeException e) {
-            log.error(e.getMessage());
+        return findReviewById(id);
+    }
+
+    private List<Review> getReviews(List<Long> ids) {
+
+        String query = SQL_GET_REVIEWS;
+        MapSqlParameterSource params = new MapSqlParameterSource();
+
+        if (ids != null) {
+            if (ids.isEmpty()) {
+                return new ArrayList<>();
+            } else {
+                query = SQL_GET_REVIEWS_FROM_IDS;
+            }
         }
-        return null;
+
+        if (ids != null) {
+            params.addValue("ids", ids);
+        }
+
+        return dbConnector.queryWithParams(query, params, new ReviewMapper());
     }
 
     @Override
-    public Review get(Long id) {
-        validateId(id);
+    public Review findReviewById(Long reviewId) {
+        DbConnector.validateId(reviewId);
 
-        String query = getBaseSelectSQL() + " WHERE REVIEW_ID=?";
+        List<Review> reviews = getReviews(List.of(reviewId));
 
-        try {
-            return jdbcTemplate.queryForObject(query, reviewMapper, id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Запись не найдена.");
+        if (reviews.isEmpty()) {
+            throw new NotFoundException("Отзыва c таким id нет");
         }
+
+        return reviews.get(0);
     }
 
     @Override
-    public List<Review> getAll(Long limit) {
-        String query = getBaseSelectSQL() +
-                " ORDER BY cast(USEFUL AS INT) DESC";
+    public List<Review> getReviews(Long limit) {
+
+        String query = SQL_GET_REVIEWS + " " + SQL_ORDER;
 
         if (limit != null) {
-            query += " LIMIT " + limit;
+
+            query += " " + SQL_LIMIT;
+
         }
 
-        return jdbcTemplate.query(query, reviewMapper);
+        MapSqlParameterSource params = new MapSqlParameterSource("limit", limit);
+
+        List<Long> ids = dbConnector.queryWithParamsByCustomType(query,
+                params, (rs, numRow) ->
+                        rs.getLong(SQL_REVIEWS_KEY_FIELD)
+        );
+
+        return getReviews(ids);
     }
 
     @Override
-    public Review update(Review review) {
-        validateId(review.getReviewId());
+    public List<Review> getByFilmId(Long filmId, Long limit) {
+        filmStorage.findFilmById(filmId);
 
-        try {
-            int status = jdbcTemplate.update(SQL_UPDATE_REVIEW,
-                    review.getContent(),
-                    review.getIsPositive(),
-                    review.getReviewId());
+        List<Long> ids = null;
 
-            if (status != 0) {
-                log.info("Запись успешно обновлена ");
-            } else {
-                throw new NotFoundException("Запись с заданным идентификатором для обновления не найдена.");
-            }
-        } catch (RuntimeException e) {
-            log.error(e.getMessage());
+        if (limit != null) {
+
+            MapSqlParameterSource params = new MapSqlParameterSource("limit", limit);
+            params.addValue("filmId", filmId);
+
+            ids = dbConnector.queryWithParamsByCustomType(
+                    SQL_GET_REVIEWS_BY_FILM_ID,
+                    params, (rs, numRow) -> rs.getLong("REVIEW_ID")
+            );
         }
 
-        return get(review.getReviewId());
+        return getReviews(ids);
     }
 
     @Override
-    public List<Review> getByFilmId(Long id, Long limitCount) {
-        validateId(id);
+    public Review updateReview(Review review) {
+        findReviewById(review.getReviewId());
 
-        String query = getBaseSelectSQL() + " WHERE FILM_ID=?" +
-                " ORDER BY USEFUL DESC";
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("content", review.getContent());
+        params.addValue("isPositive", review.getIsPositive());
+        params.addValue("reviewId", review.getReviewId());
 
-        if (limitCount != null) {
-            query += " LIMIT " + limitCount;
+        if (dbConnector.runWithParams(SQL_UPDATE_REVIEW, params) != 0) {
+            log.info("Запись успешно обновлена ");
         }
 
-        try {
-            return jdbcTemplate.query(query, reviewMapper, id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Записи не найдены.");
-        }
+        return findReviewById(review.getReviewId());
     }
 
     @Override
-    public void delete(Long id) {
-        validateId(id);
+    public void deleteReview(Long reviewId) {
+        findReviewById(reviewId);
 
-        try {
-            int rows = jdbcTemplate.update(SQL_DELETE_REVIEW, id);
-            if (rows > 0) {
-                log.info("Запись удалена.");
-            } else {
-                throw new NotFoundException("Запись не удалена.");
-            }
-        } catch (RuntimeException e) {
-            log.info(e.getMessage());
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("reviewId", reviewId);
+
+        if (dbConnector.runWithParams(SQL_DELETE_REVIEW, params) != 0) {
+            log.info("Запись успешно удалена ");
         }
     }
 }

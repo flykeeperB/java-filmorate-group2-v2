@@ -5,15 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.storage.ReviewLikesStorage;
 
 @Slf4j
-@Component("reviewLikesDbStorage")
-@Repository
+@Repository("reviewLikesDbStorage")
 public class ReviewLikesDbStorage implements ReviewLikesStorage {
 
     private final JdbcTemplate jdbcTemplate;
