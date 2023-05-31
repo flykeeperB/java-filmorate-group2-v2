@@ -28,11 +28,11 @@ public class ReviewService {
     }
 
     public List<Review> getAll(Long limit) {
-        return reviewStorage.getAll(limit);
+        return reviewStorage.getReviews(limit);
     }
 
     public Review get(Long id) {
-        return reviewStorage.get(id);
+        return reviewStorage.findReviewById(id);
     }
 
     public List<Review> getByFilmId(Long id, Long limit) {
@@ -40,7 +40,7 @@ public class ReviewService {
     }
 
     public Review create(Review review) {
-        Review resultReview = reviewStorage.add(review);
+        Review resultReview = reviewStorage.addReview(review);
         eventStorage.addEventOnAddReview(resultReview.getUserId(), resultReview.getReviewId());
         return resultReview;
     }
@@ -48,13 +48,13 @@ public class ReviewService {
     public void delete(Long id) {
         Review resultReview = get(id);
         eventStorage.addEventOnDeleteReview(resultReview.getUserId(), resultReview.getReviewId());
-        reviewStorage.delete(id);
+        reviewStorage.deleteReview(id);
     }
 
     public Review update(Review review) {
         Review resultReview = get(review.getReviewId());
         eventStorage.addEventOnUpdateReview(resultReview.getUserId(), resultReview.getReviewId());
-        return reviewStorage.update(review);
+        return reviewStorage.updateReview(review);
     }
 
     public void addLike(long reviewId, long userId) {

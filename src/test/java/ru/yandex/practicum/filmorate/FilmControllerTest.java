@@ -139,7 +139,7 @@ public class FilmControllerTest {
                 "}";
         Film film = gson.fromJson(jsonFilm, Film.class);
         ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
-        film.setId(1);
+        film.setId(1L);
         assertEquals(film, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -195,8 +195,8 @@ public class FilmControllerTest {
         ResponseEntity<List<Film>> response = restTemplate.exchange("/films", HttpMethod.GET,
                 null, new ParameterizedTypeReference<>() {
                 });
-        film.setId(1);
-        film2.setId(2);
+        film.setId(1L);
+        film2.setId(2L);
         List<Film> films = new ArrayList<>();
         films.add(film);
         films.add(film2);
@@ -218,7 +218,7 @@ public class FilmControllerTest {
         Film film = gson.fromJson(jsonFilm, Film.class);
         restTemplate.postForEntity("/films", film, Film.class);
         ResponseEntity<Film> response = restTemplate.getForEntity("/films/1", Film.class);
-        film.setId(1);
+        film.setId(1L);
         assertEquals(film, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -249,8 +249,8 @@ public class FilmControllerTest {
         ResponseEntity<List<Film>> response = restTemplate.exchange("/films/popular?year=1999&genreId=1",
                 HttpMethod.GET, null, new ParameterizedTypeReference<>() {
                 });
-        film.setId(1);
-        film2.setId(2);
+        film.setId(1L);
+        film2.setId(2L);
         List<Film> films = new ArrayList<>();
         films.add(film);
         for (int i = 0; i < films.size(); i++) {
@@ -333,7 +333,7 @@ public class FilmControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        film.setId(1);
+        film.setId(1L);
         List<Film> films = new ArrayList<>();
         films.add(film);
         ResponseEntity<List<Film>> responseSearch = restTemplate.exchange("/films/search?query=nisi&by=title",
@@ -373,7 +373,7 @@ public class FilmControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        film2.setId(2);
+        film2.setId(2L);
         List<Film> films = new ArrayList<>();
         films.add(film2);
         ResponseEntity<List<Film>> responseSearch = restTemplate.exchange("/films/search?query=tem&by=director",
@@ -433,7 +433,7 @@ public class FilmControllerTest {
                 .exchange("/films/common?userId=1&friendId=2", HttpMethod.GET,
                         null, new ParameterizedTypeReference<>() {
                         });
-        film.setId(1);
+        film.setId(1L);
         List<Film> films = new ArrayList<>();
         films.add(film);
         for (int i = 0; i < films.size(); i++) {
@@ -470,7 +470,7 @@ public class FilmControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        film2.setId(2);
+        film2.setId(2L);
         List<Film> films = new ArrayList<>();
         films.add(film2);
         ResponseEntity<List<Film>> responseSearch = restTemplate
@@ -511,7 +511,7 @@ public class FilmControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        film2.setId(2);
+        film2.setId(2L);
         List<Film> films = new ArrayList<>();
         films.add(film2);
         ResponseEntity<List<Film>> responseSearch = restTemplate
@@ -536,7 +536,7 @@ public class FilmControllerTest {
         Film film = gson.fromJson(jsonFilm, Film.class);
         restTemplate.postForEntity("/films", film, Film.class);
         ResponseEntity<Film> response = restTemplate.getForEntity("/films/1", Film.class);
-        film.setId(1);
+        film.setId(1L);
         assertEquals(film, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
         ResponseEntity<Film> responseDelete = restTemplate

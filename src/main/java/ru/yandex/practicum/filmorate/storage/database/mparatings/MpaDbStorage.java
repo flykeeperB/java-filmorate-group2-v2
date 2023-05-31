@@ -12,9 +12,9 @@ import java.util.List;
 
 @Repository
 public class MpaDbStorage implements MpaStorage {
-    private static final String SQL_GET_ALL_MPAS = "SELECT * FROM LIST_OF_MPAS";
-    private static final String SQL_GET_MPA_ID = "SELECT MPA_ID FROM LIST_OF_MPAS WHERE MPA_ID=?";
-    private static final String SQL_GET_ALL_MPA = "SELECT * FROM LIST_OF_MPAS WHERE MPA_ID=?";
+    private static final String SQL_GET_ALL_MPAS = "SELECT * FROM MPAS";
+    private static final String SQL_GET_MPA_ID = "SELECT MPA_ID FROM MPAS WHERE MPA_ID=?";
+    private static final String SQL_GET_ALL_MPA = "SELECT * FROM MPAS WHERE MPA_ID=?";
 
     private final JdbcTemplate jdbcTemplate;
 

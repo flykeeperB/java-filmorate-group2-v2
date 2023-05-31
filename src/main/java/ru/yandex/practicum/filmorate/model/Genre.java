@@ -7,7 +7,7 @@ import java.util.Objects;
 
 @Data
 public class Genre {
-    private long id;
+    private Long id;
     private String name;
 
     @Override

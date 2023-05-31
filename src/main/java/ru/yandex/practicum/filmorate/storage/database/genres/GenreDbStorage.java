@@ -15,20 +15,17 @@ public class GenreDbStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    private GenreMapper genreMapper;
-
-    @Autowired
     public GenreDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    private static final String SQL_GET_ALL_GENRES = "SELECT * FROM LIST_OF_GENRES";
-    private static final String SQL_GET_GENRE_ID = "SELECT GENRE_ID FROM LIST_OF_GENRES WHERE GENRE_ID=?";
-    private static final String SQL_GET_ALL_GENRE = "SELECT * FROM LIST_OF_GENRES WHERE GENRE_ID=?";
+    private static final String SQL_GET_ALL_GENRES = "SELECT * FROM GENRES";
+    private static final String SQL_GET_GENRE_ID = "SELECT GENRE_ID FROM GENRES WHERE GENRE_ID=?";
+    private static final String SQL_GET_ALL_GENRE = "SELECT * FROM GENRES WHERE GENRE_ID=?";
 
     @Override
     public List<Genre> findAllGenres() {
-        return jdbcTemplate.query(SQL_GET_ALL_GENRES, genreMapper);
+        return jdbcTemplate.query(SQL_GET_ALL_GENRES, new GenreMapper());
     }
 
     @Override
@@ -39,7 +36,7 @@ public class GenreDbStorage implements GenreStorage {
             int count = jdbcTemplate.queryForObject(SQL_GET_GENRE_ID, new Object[]{genreId}, Integer.class);
             exists = count > 0;
             if (exists) {
-                genre = jdbcTemplate.query(SQL_GET_ALL_GENRE, new Object[]{genreId}, genreMapper)
+                genre = jdbcTemplate.query(SQL_GET_ALL_GENRE, new Object[]{genreId}, new GenreMapper())
                         .stream().findAny().orElse(null);
             }
         } catch (EmptyResultDataAccessException e) {

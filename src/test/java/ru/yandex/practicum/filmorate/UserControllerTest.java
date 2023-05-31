@@ -43,10 +43,10 @@ public class UserControllerTest {
                 "  \"name\": \"Nick Name\",\n" +
                 "  \"email\": \"mail@mail.ru\",\n" +
                 "  \"birthday\": \"1946-08-20\"\n" +
-                        "}";
+                "}";
         User user = gson.fromJson(jsonUser, User.class);
         ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
-        user.setId(1);
+        user.setId(1L);
         assertEquals(user, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -113,7 +113,7 @@ public class UserControllerTest {
                 "}";
         User user = gson.fromJson(jsonUser, User.class);
         ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
-        user.setId(1);
+        user.setId(1L);
         user.setName("dolore");
         assertEquals(user, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -142,7 +142,7 @@ public class UserControllerTest {
                 "}";
         User user1 = gson.fromJson(jsonUser1, User.class);
         restTemplate.postForEntity("/users", user1, User.class);
-        user1.setId(1);
+        user1.setId(1L);
 
         String jsonUser2 = "{" +
                 "  \"login\": \"login\",\n" +
@@ -152,7 +152,7 @@ public class UserControllerTest {
                 "}";
         User user2 = gson.fromJson(jsonUser2, User.class);
         restTemplate.postForEntity("/users", user2, User.class);
-        user2.setId(2);
+        user2.setId(2L);
 
         ResponseEntity<User> response = restTemplate.getForEntity("/users/2", User.class);
         assertEquals(user2, response.getBody());
@@ -176,7 +176,7 @@ public class UserControllerTest {
                 "}";
         User user1 = gson.fromJson(jsonUser1, User.class);
         restTemplate.postForEntity("/users", user1, User.class);
-        user1.setId(1);
+        user1.setId(1L);
 
         String jsonUser2 = "{" +
                 "  \"login\": \"login\",\n" +
@@ -186,7 +186,7 @@ public class UserControllerTest {
                 "}";
         User user2 = gson.fromJson(jsonUser2, User.class);
         restTemplate.postForEntity("/users", user2, User.class);
-        user2.setId(2);
+        user2.setId(2L);
 
         List<User> users = new ArrayList<>();
         users.add(user1);
@@ -220,7 +220,7 @@ public class UserControllerTest {
                 "}";
         User user1 = gson.fromJson(jsonUser1, User.class);
         restTemplate.postForEntity("/users", user1, User.class);
-        user1.setId(1);
+        user1.setId(1L);
 
         String jsonUser2 = "{" +
                 "  \"login\": \"login\",\n" +
@@ -230,7 +230,7 @@ public class UserControllerTest {
                 "}";
         User user2 = gson.fromJson(jsonUser2, User.class);
         restTemplate.postForEntity("/users", user2, User.class);
-        user2.setId(2);
+        user2.setId(2L);
 
         List<User> friends = new ArrayList<>();
         friends.add(user2);
@@ -256,7 +256,7 @@ public class UserControllerTest {
                 "}";
         User user1 = gson.fromJson(jsonUser1, User.class);
         restTemplate.postForEntity("/users", user1, User.class);
-        user1.setId(1);
+        user1.setId(1L);
 
         List<User> friends = new ArrayList<>();
 
@@ -281,7 +281,7 @@ public class UserControllerTest {
                 "}";
         User user1 = gson.fromJson(jsonUser1, User.class);
         restTemplate.postForEntity("/users", user1, User.class);
-        user1.setId(1);
+        user1.setId(1L);
 
         HttpEntity<User> entity = new HttpEntity<>(user1);
         ResponseEntity<User> response = restTemplate.exchange("/users/2/friends/1", HttpMethod.PUT, entity, User.class);
@@ -298,7 +298,7 @@ public class UserControllerTest {
                 "}";
         User user1 = gson.fromJson(jsonUser1, User.class);
         restTemplate.postForEntity("/users", user1, User.class);
-        user1.setId(1);
+        user1.setId(1L);
 
         String jsonUser2 = "{" +
                 "  \"login\": \"login\",\n" +
@@ -308,7 +308,7 @@ public class UserControllerTest {
                 "}";
         User user2 = gson.fromJson(jsonUser2, User.class);
         restTemplate.postForEntity("/users", user2, User.class);
-        user2.setId(2);
+        user2.setId(2L);
 
         String jsonCommonFriend = "{" +
                 "  \"login\": \"friend\",\n" +
@@ -318,7 +318,7 @@ public class UserControllerTest {
                 "}";
         User userCommonFriend = gson.fromJson(jsonCommonFriend, User.class);
         restTemplate.postForEntity("/users", userCommonFriend, User.class);
-        userCommonFriend.setId(3);
+        userCommonFriend.setId(3L);
 
         List<User> commonFriends = new ArrayList<>();
         commonFriends.add(userCommonFriend);
@@ -346,7 +346,7 @@ public class UserControllerTest {
                 "}";
         User user = gson.fromJson(jsonUser, User.class);
         restTemplate.postForEntity("/users", user, User.class);
-        user.setId(1);
+        user.setId(1L);
 
         String jsonUpdateUser = "{" +
                 "  \"id\": 1,\n" +
@@ -372,7 +372,7 @@ public class UserControllerTest {
                 "}";
         User user = gson.fromJson(jsonUser, User.class);
         restTemplate.postForEntity("/users", user, User.class);
-        user.setId(1);
+        user.setId(1L);
 
         String jsonUpdateUser = "{" +
                 "  \"id\": 1,\n" +
@@ -397,7 +397,7 @@ public class UserControllerTest {
                 "}";
         User user = gson.fromJson(jsonUser, User.class);
         restTemplate.postForEntity("/users", user, User.class);
-        user.setId(1);
+        user.setId(1L);
 
         String jsonUpdateUser = "{" +
                 "  \"id\": 1,\n" +
@@ -424,7 +424,7 @@ public class UserControllerTest {
                 "}";
         User user = gson.fromJson(jsonUser, User.class);
         restTemplate.postForEntity("/users", user, User.class);
-        user.setId(1);
+        user.setId(1L);
 
         String jsonUpdateUser = "{" +
                 "  \"id\": 1,\n" +
@@ -449,7 +449,7 @@ public class UserControllerTest {
                 "}";
         User user = gson.fromJson(jsonUser, User.class);
         restTemplate.postForEntity("/users", user, User.class);
-        user.setId(1);
+        user.setId(1L);
 
         String jsonUpdateUser = "{" +
                 "  \"id\": 1,\n" +
@@ -547,7 +547,7 @@ public class UserControllerTest {
                 "}";
         Film film1 = gson.fromJson(jsonFilm1, Film.class);
         restTemplate.postForEntity("/films", film1, Film.class);
-        film1.setId(1);
+        film1.setId(1L);
 
         String jsonFilm2 = "{" +
                 "  \"name\": \"film2\",\n" +
@@ -558,7 +558,7 @@ public class UserControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        film2.setId(2);
+        film2.setId(2L);
 
         String jsonFilm3 = "{" +
                 "  \"name\": \"film3\",\n" +
@@ -569,7 +569,7 @@ public class UserControllerTest {
                 "}";
         Film film3 = gson.fromJson(jsonFilm3, Film.class);
         restTemplate.postForEntity("/films", film3, Film.class);
-        film3.setId(3);
+        film3.setId(3L);
 
         List<Film> recommendationFilms = new ArrayList<>();
         recommendationFilms.add(film3);

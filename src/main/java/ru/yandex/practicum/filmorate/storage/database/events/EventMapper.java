@@ -12,12 +12,12 @@ public class EventMapper implements RowMapper<Event> {
     public Event mapRow(ResultSet rs, int rowNum) throws SQLException {
 
         Event event = new Event();
-        event.setEventId(rs.getInt("event_id"));
+        event.setEventId(rs.getLong("event_id"));
         event.setTimestamp(rs.getTimestamp("time_event").toInstant().toEpochMilli());
-        event.setUserId(rs.getInt("user_id"));
+        event.setUserId(rs.getLong("user_id"));
         event.setEventType(rs.getString("type_name"));
         event.setOperation(rs.getString("operation_name"));
-        event.setEntityId(rs.getInt("entity_id"));
+        event.setEntityId(rs.getLong("entity_id"));
 
         return event;
     }

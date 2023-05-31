@@ -2,15 +2,13 @@ package ru.yandex.practicum.filmorate.storage.database.users;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.ExtraFunctionalUserStorage;
 
 import java.util.List;
 
-@Component("extraFunctionalUserDbStorage")
-@Repository
+@Repository("extraFunctionalUserDbStorage")
 public class ExtraFunctionalUserDbStorage extends UserDbStorage implements ExtraFunctionalUserStorage {
 
     @Autowired

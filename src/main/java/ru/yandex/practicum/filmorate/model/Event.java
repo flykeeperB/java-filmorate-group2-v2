@@ -4,10 +4,10 @@ import lombok.Data;
 
 @Data
 public class Event {
-    private int eventId;
-    private long timestamp;
-    private int userId;
+    private Long eventId;
+    private Long timestamp;
+    private Long userId;
     private String eventType;
     private String operation;
-    private int entityId;
+    private Long entityId;
 }

@@ -12,13 +12,9 @@ public interface FilmStorage {
 
     List<Film> findAllFilms();
 
-    List<Film> getFilms(List<Long> ids);
-
-    List<Film> getFilms(List<Long> ids, String orderFields);
-
     Film findFilmById(Long id);
 
-    List<Film> getPopularFilms(Long count);
+    List<Film> getPopularFilms(Long limit);
 
     void deleteLike(Long filmId, Long userId);
 

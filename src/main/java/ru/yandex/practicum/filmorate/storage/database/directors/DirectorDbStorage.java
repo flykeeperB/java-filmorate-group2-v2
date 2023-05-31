@@ -14,19 +14,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Repository
-@Component("directorDbStorage")
+@Repository("directorDbStorage")
 public class DirectorDbStorage implements DirectorStorage {
-    private static final String SQL_GET_ALL_DIRECTOR = "SELECT * FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
-    private static final String SQL_UPDATE_DIRECTORS = "UPDATE LIST_OF_DIRECTORS SET DIRECTOR_NAME=? WHERE DIRECTOR_ID=?";
-    private static final String SQL_DELETE_DIRECTOR = "DELETE FROM LIST_OF_DIRECTORS WHERE DIRECTOR_ID=?";
-    private static final String SQL_GET_ALL_DIRECTORS = "SELECT * FROM LIST_OF_DIRECTORS";
+    private static final String SQL_GET_ALL_DIRECTOR = "SELECT * FROM DIRECTORS WHERE DIRECTOR_ID=?";
+    private static final String SQL_UPDATE_DIRECTORS = "UPDATE DIRECTORS SET DIRECTOR_NAME=? WHERE DIRECTOR_ID=?";
+    private static final String SQL_DELETE_DIRECTOR = "DELETE FROM DIRECTORS WHERE DIRECTOR_ID=?";
+    private static final String SQL_GET_ALL_DIRECTORS = "SELECT * FROM DIRECTORS";
     private final JdbcTemplate jdbcTemplate;
 
     protected final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    @Autowired
-    private DirectorMapper directorMapper;
 
     @Autowired
     public DirectorDbStorage(JdbcTemplate jdbcTemplate) {
@@ -36,13 +32,13 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public List<Director> findAllDirectors() {
-        return jdbcTemplate.query(SQL_GET_ALL_DIRECTORS, directorMapper);
+        return jdbcTemplate.query(SQL_GET_ALL_DIRECTORS, new DirectorMapper());
     }
 
     @Override
     public Director findDirectorById(Long directorId) {
         Director director = jdbcTemplate.query(SQL_GET_ALL_DIRECTOR,
-                new Object[]{directorId}, directorMapper).stream().findAny().orElse(null);
+                new Object[]{directorId}, new DirectorMapper()).stream().findAny().orElse(null);
         if (director == null) {
             throw new NotFoundException("Режиссёра c таким id нет");
         }
@@ -52,7 +48,7 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     public Director addDirector(Director director) {
         SimpleJdbcInsert insertIntoDirector = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("LIST_OF_DIRECTORS")
+                .withTableName("DIRECTORS")
                 .usingGeneratedKeyColumns("DIRECTOR_ID");
         final Map<String, Object> parameters = new HashMap<>();
         parameters.put("DIRECTOR_NAME", director.getName());
