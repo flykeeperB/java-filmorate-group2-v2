@@ -23,35 +23,35 @@ public class ReviewDbStorage implements ReviewStorage {
 
     private static final String SQL_REVIEWS_TABLE = "REVIEWS";
     private static final String SQL_REVIEWS_TABLE_ALIAS = "r";
-    private static final String SQL_REVIEWS_TABLE_AND_ALIAS = SQL_REVIEWS_TABLE+" as "+SQL_REVIEWS_TABLE_ALIAS;
+    private static final String SQL_REVIEWS_TABLE_AND_ALIAS = SQL_REVIEWS_TABLE + " as " + SQL_REVIEWS_TABLE_ALIAS;
     private static final String SQL_REVIEWS_KEY_FIELD = "REVIEW_ID";
 
     private static final String SQL_UPDATE_REVIEW = "UPDATE " + SQL_REVIEWS_TABLE_AND_ALIAS + " SET " +
-            SQL_REVIEWS_TABLE_ALIAS+".CONTENT=:content, " +
-            SQL_REVIEWS_TABLE_ALIAS+".IS_POSITIVE=:isPositive " +
-            "WHERE "+SQL_REVIEWS_TABLE_ALIAS+"."+SQL_REVIEWS_KEY_FIELD+"=:reviewId";
+            SQL_REVIEWS_TABLE_ALIAS + ".CONTENT=:content, " +
+            SQL_REVIEWS_TABLE_ALIAS + ".IS_POSITIVE=:isPositive " +
+            "WHERE " + SQL_REVIEWS_TABLE_ALIAS + "." + SQL_REVIEWS_KEY_FIELD + "=:reviewId";
 
     private static final String SQL_DELETE_REVIEW = "DELETE FROM " +
             SQL_REVIEWS_TABLE_AND_ALIAS +
-            " WHERE "+SQL_REVIEWS_TABLE_ALIAS+"."+SQL_REVIEWS_KEY_FIELD+"=:reviewId";
+            " WHERE " + SQL_REVIEWS_TABLE_ALIAS + "." + SQL_REVIEWS_KEY_FIELD + "=:reviewId";
 
-    protected static final String SQL_ORDER = "ORDER BY cast("+SQL_REVIEWS_TABLE_ALIAS+".USEFUL AS INT) DESC";
+    protected static final String SQL_ORDER = "ORDER BY cast(" + SQL_REVIEWS_TABLE_ALIAS + ".USEFUL AS INT) DESC";
     protected static final String SQL_LIMIT = "LIMIT :limit";
 
-    protected static final String SQL_GET_REVIEWS = "SELECT "+
-            SQL_REVIEWS_TABLE_ALIAS+".REVIEW_ID, " +
-            SQL_REVIEWS_TABLE_ALIAS+".USER_ID, " +
-            SQL_REVIEWS_TABLE_ALIAS+".FILM_ID, " +
-            SQL_REVIEWS_TABLE_ALIAS+".CONTENT, " +
-            SQL_REVIEWS_TABLE_ALIAS+".IS_POSITIVE, " +
-            SQL_REVIEWS_TABLE_ALIAS+".USEFUL " +
+    protected static final String SQL_GET_REVIEWS = "SELECT " +
+            SQL_REVIEWS_TABLE_ALIAS + ".REVIEW_ID, " +
+            SQL_REVIEWS_TABLE_ALIAS + ".USER_ID, " +
+            SQL_REVIEWS_TABLE_ALIAS + ".FILM_ID, " +
+            SQL_REVIEWS_TABLE_ALIAS + ".CONTENT, " +
+            SQL_REVIEWS_TABLE_ALIAS + ".IS_POSITIVE, " +
+            SQL_REVIEWS_TABLE_ALIAS + ".USEFUL " +
             "FROM " + SQL_REVIEWS_TABLE_AND_ALIAS;
 
     protected static final String SQL_GET_REVIEWS_FROM_IDS = SQL_GET_REVIEWS +
-            " WHERE "+SQL_REVIEWS_TABLE_ALIAS+".REVIEW_ID IN ( :ids ) "+SQL_ORDER;
+            " WHERE " + SQL_REVIEWS_TABLE_ALIAS + ".REVIEW_ID IN ( :ids ) " + SQL_ORDER;
 
     protected static final String SQL_GET_REVIEWS_BY_FILM_ID = SQL_GET_REVIEWS +
-            " WHERE "+SQL_REVIEWS_TABLE_ALIAS+".FILM_ID = :filmId " + SQL_ORDER + " " + SQL_LIMIT;
+            " WHERE " + SQL_REVIEWS_TABLE_ALIAS + ".FILM_ID = :filmId " + SQL_ORDER + " " + SQL_LIMIT;
 
     private final DbConnector<Review> dbConnector;
 
