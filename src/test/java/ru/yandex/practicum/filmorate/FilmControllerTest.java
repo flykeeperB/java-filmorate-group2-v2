@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -98,11 +99,17 @@ public class FilmControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        ResponseEntity<List> response = restTemplate.getForEntity("/films", List.class);
+        ResponseEntity<List<Film>> response = restTemplate.exchange("/films", HttpMethod.GET,
+                null, new ParameterizedTypeReference<>() {
+                });
+        film.setId(1);
+        film2.setId(2);
         List<Film> films = new ArrayList<>();
         films.add(film);
         films.add(film2);
-        assertEquals(films.size(), response.getBody().size());
+        for (int i = 0; i < films.size(); i++) {
+            assertEquals(films.get(i).getId(), response.getBody().get(i).getId());
+        }
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -146,12 +153,17 @@ public class FilmControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        ResponseEntity<List> response = restTemplate.getForEntity("/films/popular?year=1999&genreId=1", List.class);
+        ResponseEntity<List<Film>> response = restTemplate.exchange("/films/popular?year=1999&genreId=1",
+                HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+                });
         film.setId(1);
         film2.setId(2);
         List<Film> films = new ArrayList<>();
         films.add(film);
-        assertEquals(films.size(), response.getBody().size());
+        for (int i = 0; i < films.size(); i++) {
+            assertEquals(films.get(i).getId(), response.getBody().get(i).getId());
+        }
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -174,8 +186,8 @@ public class FilmControllerTest {
                 "}";
         User user = gson.fromJson(jsonUser, User.class);
         restTemplate.postForEntity("/users", user, User.class);
-        HttpEntity<Film> entity = new HttpEntity<>(film);
-        ResponseEntity<Film> response = restTemplate.exchange("/films/1/like/1", HttpMethod.PUT, entity, Film.class);
+        ResponseEntity<Film> response = restTemplate.exchange("/films/1/like/1", HttpMethod.PUT,
+                null, Film.class);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -198,12 +210,11 @@ public class FilmControllerTest {
                 "}";
         User user = gson.fromJson(jsonUser, User.class);
         restTemplate.postForEntity("/users", user, User.class);
-        HttpEntity<Film> entity = new HttpEntity<>(film);
         ResponseEntity<Film> responseAdd = restTemplate
-                .exchange("/films/1/like/1", HttpMethod.PUT, entity, Film.class);
+                .exchange("/films/1/like/1", HttpMethod.PUT, null, Film.class);
         assertEquals(HttpStatus.OK, responseAdd.getStatusCode());
         ResponseEntity<Film> responseDelete = restTemplate
-                .exchange("/films/1/like/1", HttpMethod.DELETE, entity, Film.class);
+                .exchange("/films/1/like/1", HttpMethod.DELETE, null, Film.class);
         assertEquals(HttpStatus.OK, responseDelete.getStatusCode());
     }
 
@@ -232,10 +243,13 @@ public class FilmControllerTest {
         film.setId(1);
         List<Film> films = new ArrayList<>();
         films.add(film);
-        ResponseEntity<List> responseSearch = restTemplate
-                .getForEntity("/films/search?query=nisi&by=title", List.class);
+        ResponseEntity<List<Film>> responseSearch = restTemplate.exchange("/films/search?query=nisi&by=title",
+                HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+                });
         assertEquals(HttpStatus.OK, responseSearch.getStatusCode());
-        assertEquals(films.size(), responseSearch.getBody().size());
+        for (int i = 0; i < films.size(); i++) {
+            assertEquals(films.get(i).getId(), responseSearch.getBody().get(i).getId());
+        }
     }
 
     @Test
@@ -266,13 +280,16 @@ public class FilmControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        film.setId(1);
+        film2.setId(2);
         List<Film> films = new ArrayList<>();
-        films.add(film);
-        ResponseEntity<List> responseSearch = restTemplate
-                .getForEntity("/films/search?query=tem&by=director", List.class);
+        films.add(film2);
+        ResponseEntity<List<Film>> responseSearch = restTemplate.exchange("/films/search?query=tem&by=director",
+                HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+                });
         assertEquals(HttpStatus.OK, responseSearch.getStatusCode());
-        assertEquals(films.size(), responseSearch.getBody().size());
+        for (int i = 0; i < films.size(); i++) {
+            assertEquals(films.get(i).getId(), responseSearch.getBody().get(i).getId());
+        }
     }
 
     @Test
@@ -313,19 +330,22 @@ public class FilmControllerTest {
                 "}";
         User friend = gson.fromJson(jsonFriend, User.class);
         restTemplate.postForEntity("/users", friend, User.class);
-        HttpEntity<Film> entity = new HttpEntity<>(film);
         ResponseEntity<Film> response = restTemplate
-                .exchange("/films/1/like/1", HttpMethod.PUT, entity, Film.class);
+                .exchange("/films/1/like/1", HttpMethod.PUT, null, Film.class);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         ResponseEntity<Film> response2 = restTemplate
-                .exchange("/films/1/like/2", HttpMethod.PUT, entity, Film.class);
+                .exchange("/films/1/like/2", HttpMethod.PUT, null, Film.class);
         assertEquals(HttpStatus.OK, response2.getStatusCode());
-        ResponseEntity<List> responseCommon = restTemplate
-                .getForEntity("/films/common?userId=1&friendId=2", List.class);
+        ResponseEntity<List<Film>> responseCommon = restTemplate
+                .exchange("/films/common?userId=1&friendId=2", HttpMethod.GET,
+                        null, new ParameterizedTypeReference<>() {
+                        });
         film.setId(1);
         List<Film> films = new ArrayList<>();
         films.add(film);
-        assertEquals(films.size(), responseCommon.getBody().size());
+        for (int i = 0; i < films.size(); i++) {
+            assertEquals(films.get(i).getId(), responseCommon.getBody().get(i).getId());
+        }
         assertEquals(HttpStatus.OK, responseCommon.getStatusCode());
     }
 
@@ -357,13 +377,17 @@ public class FilmControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        film.setId(1);
+        film2.setId(2);
         List<Film> films = new ArrayList<>();
-        films.add(film);
-        ResponseEntity<List> responseSearch = restTemplate
-                .getForEntity("/films/director/1?sortBy=year", List.class);
+        films.add(film2);
+        ResponseEntity<List<Film>> responseSearch = restTemplate
+                .exchange("/films/director/1?sortBy=year", HttpMethod.GET,
+                        null, new ParameterizedTypeReference<>() {
+                        });
         assertEquals(HttpStatus.OK, responseSearch.getStatusCode());
-        assertEquals(films.size(), responseSearch.getBody().size());
+        for (int i = 0; i < films.size(); i++) {
+            assertEquals(films.get(i).getId(), responseSearch.getBody().get(i).getId());
+        }
     }
 
     @Test
@@ -394,13 +418,17 @@ public class FilmControllerTest {
                 "}";
         Film film2 = gson.fromJson(jsonFilm2, Film.class);
         restTemplate.postForEntity("/films", film2, Film.class);
-        film.setId(1);
+        film2.setId(2);
         List<Film> films = new ArrayList<>();
-        films.add(film);
-        ResponseEntity<List> responseSearch = restTemplate
-                .getForEntity("/films/director/1?sortBy=likes", List.class);
+        films.add(film2);
+        ResponseEntity<List<Film>> responseSearch = restTemplate
+                .exchange("/films/director/1?sortBy=likes", HttpMethod.GET,
+                        null, new ParameterizedTypeReference<>() {
+                        });
         assertEquals(HttpStatus.OK, responseSearch.getStatusCode());
-        assertEquals(films.size(), responseSearch.getBody().size());
+        for (int i = 0; i < films.size(); i++) {
+            assertEquals(films.get(i).getId(), responseSearch.getBody().get(i).getId());
+        }
     }
 
     @Test
@@ -418,11 +446,8 @@ public class FilmControllerTest {
         film.setId(1);
         assertEquals(film, response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        HttpEntity<Film> entity = new HttpEntity<>(film);
-        ResponseEntity<List> responseDelete = restTemplate
-                .exchange("/films/1", HttpMethod.DELETE, entity, List.class);
+        ResponseEntity<Film> responseDelete = restTemplate
+                .exchange("/films/1", HttpMethod.DELETE, null, Film.class);
         assertEquals(HttpStatus.OK, responseDelete.getStatusCode());
     }
 }
-
-
