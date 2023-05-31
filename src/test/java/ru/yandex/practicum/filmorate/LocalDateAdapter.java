@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-class LocalDateAdapter extends TypeAdapter<LocalDate> {
+public class LocalDateAdapter extends TypeAdapter<LocalDate> {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Override
