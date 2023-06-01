@@ -70,8 +70,6 @@ public final class DbConnector<T> {
             log.error(e.getMessage());
             throw new StorageException("Идентификатор не задан.");
         }
-
-        //return 0;
     }
 
     public Long create(String table,
