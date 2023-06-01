@@ -11,10 +11,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,9 +39,8 @@ public final class DbConnector<T> {
             return namedParameterJdbcTemplate.query(query, params, rowMapper);
         } catch (RuntimeException e) {
             log.error(e.getMessage());
+            throw new StorageException("Ошибка базы данных при выполнении запроса.");
         }
-
-        return new ArrayList<>();
     }
 
     public <E> Map<Long, List<E>> queryWithParamsByCustomTypeExtractor(String query,
@@ -53,9 +51,8 @@ public final class DbConnector<T> {
             return namedParameterJdbcTemplate.query(query, params, extractor);
         } catch (RuntimeException e) {
             log.error(e.getMessage());
+            throw new StorageException("Ошибка базы данных при выполнении запроса.");
         }
-
-        return new HashMap<>();
     }
 
     public List<T> queryWithParams(String query,
@@ -69,11 +66,10 @@ public final class DbConnector<T> {
         try {
             log.info("Вызов запроса: " + query);
             return namedParameterJdbcTemplate.update(query, params);
-        } catch (RuntimeException e) {
+        } catch (DataIntegrityViolationException e) {
             log.error(e.getMessage());
+            throw new StorageException("Идентификатор не задан.");
         }
-
-        return 0;
     }
 
     public Long create(String table,
@@ -84,15 +80,14 @@ public final class DbConnector<T> {
                 .withTableName(table)
                 .usingGeneratedKeyColumns(generatedKeyColumns);
 
-        long result = 0L;
         try {
-            result = insertRequest.executeAndReturnKey(parameters).longValue();
+            long result = insertRequest.executeAndReturnKey(parameters).longValue();
             log.info("В таблицу " + table + " добавлена запись id=" + result);
+            return result;
         } catch (DataIntegrityViolationException e) {
             log.error(e.getMessage());
+            throw new StorageException("Ошибка базы данных при добавлении записи.");
         }
-
-        return result;
     }
 
     public static void validateId(Long id) {
