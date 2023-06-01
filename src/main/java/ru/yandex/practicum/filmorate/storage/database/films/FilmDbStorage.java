@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.database.films;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
@@ -317,8 +318,11 @@ public class FilmDbStorage implements FilmStorage {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue(SQL_KEY_FIELD, filmId);
         params.addValue("USER_ID", userId);
-
-        dbConnector.runWithParams(SQL_INSERT_LIKE, params);
+        try {
+            dbConnector.runWithParams(SQL_INSERT_LIKE, params);
+        } catch (RuntimeException e) {
+            log.info("Ошибка при добавлении лайка");
+        }
     }
 
     private Map<Long, List<Genre>> getGenresForFilms(List<Long> ids) {
