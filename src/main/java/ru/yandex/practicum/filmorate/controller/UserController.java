@@ -4,43 +4,48 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.ExtraFunctionalFilmService;
+import ru.yandex.practicum.filmorate.service.ExtraFunctionalUserService;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
 @RestController
+@RequestMapping(value = "/users")
 public class UserController {
-    private final UserService userService;
+    private final ExtraFunctionalUserService userService;
+    private final ExtraFunctionalFilmService filmService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(ExtraFunctionalUserService userService, ExtraFunctionalFilmService filmService) {
         this.userService = userService;
+        this.filmService = filmService;
     }
 
-    @GetMapping("/users")
+    @GetMapping
     public List<User> findAll() {
         return userService.getListAllUsers();
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     public User findById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
-    @GetMapping("/users/{id}/friends")
+    @GetMapping("/{id}/friends")
     public List<User> findListFriend(@PathVariable("id") Long userId) {
         return userService.getListFriends(userId);
     }
 
-    @GetMapping("/users/{id}/friends/common/{otherId}")
+    @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> findCommonFriends(@PathVariable("id") Long userId, @PathVariable("otherId") Long otherUserId) {
         return userService.getListCommonFriends(userId, otherUserId);
     }
 
-    @PostMapping("/users")
+    @PostMapping
     public User create(@RequestBody User user) {
         log.info("POST request received: {}", user);
         if (user.getEmail() == null || user.getEmail().isBlank()) {
@@ -71,7 +76,7 @@ public class UserController {
         return userService.createUser(user);
     }
 
-    @PutMapping("/users")
+    @PutMapping
     public User put(@RequestBody User user) {
         log.info("PUT request received: {}", user);
         if (user.getEmail() == null || user.getEmail().isBlank()) {
@@ -102,14 +107,25 @@ public class UserController {
         return userService.updateUser(user.getId(), user);
     }
 
-    @PutMapping("/users/{id}/friends/{friendId}")
+    @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable("id") Long userId, @PathVariable("friendId") Long friendId) {
         userService.addFriend(userId, friendId);
     }
 
-    @DeleteMapping("/users/{id}/friends/{friendId}")
+    @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable("id") Long userId, @PathVariable("friendId") Long friendId) {
         userService.deleteFriend(userId, friendId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUserById(
+            @PathVariable Long id) {
+        userService.deleteUserById(id);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getUserRecommendations(@PathVariable long id) {
+        return filmService.getUserRecommendations(id);
     }
 
 }

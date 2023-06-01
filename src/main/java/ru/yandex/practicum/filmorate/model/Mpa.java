@@ -4,11 +4,10 @@ import lombok.Data;
 
 @Data
 public class Mpa {
-    long id;
-    String name;
+    private Long id;
+    private String name;
 
     public Mpa() {
-
     }
 
     public Mpa(long id) {

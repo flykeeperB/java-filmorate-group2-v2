@@ -5,38 +5,42 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.ExtraFunctionalFilmService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @RestController
+@RequestMapping(value = "/films")
 public class FilmController {
-    private final FilmService filmService;
+    private final ExtraFunctionalFilmService filmService;
 
     @Autowired
-    public FilmController(FilmService filmService) {
+    public FilmController(ExtraFunctionalFilmService filmService) {
         this.filmService = filmService;
     }
 
-    @GetMapping("/films")
+    @GetMapping
     public List<Film> findAll() {
         return filmService.getAllFilms();
     }
 
-    @GetMapping("/films/{id}")
+    @GetMapping("/{id}")
     public Film findById(@PathVariable Long id) {
         return filmService.getFilmById(id);
     }
 
-    @GetMapping("/films/popular")
+    @GetMapping("/popular")
     public List<Film> findPopularFilms(
-            @RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
-        return filmService.getPopularFilms(count);
+            @RequestParam(value = "count", defaultValue = "10", required = false) Integer count,
+            @RequestParam(value = "genreId", defaultValue = "-1", required = false) Long genreId,
+            @RequestParam(value = "year", defaultValue = "-1", required = false) Integer year) {
+        return filmService.getPopularFilms(count, genreId, year);
     }
 
-    @PostMapping("/films")
+    @PostMapping
     public Film create(@RequestBody Film film) {
         log.info("POST request received: {}", film);
         if (film.getName() == null || film.getName().isBlank() || film.getName().isEmpty()) {
@@ -58,7 +62,7 @@ public class FilmController {
         return filmService.createFilm(film);
     }
 
-    @PutMapping("/films")
+    @PutMapping
     public Film put(@RequestBody Film film) {
         log.info("PUT request received: {}", film);
         if (film.getName() == null || film.getName().isBlank() || film.getName().isEmpty()) {
@@ -80,18 +84,49 @@ public class FilmController {
         return filmService.updateFilm(film.getId(), film);
     }
 
-    @PutMapping("/films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public void putLikeFilm(
             @PathVariable("id") Long filmId,
             @PathVariable("userId") Long userId) {
         filmService.addLike(filmId, userId);
     }
 
-    @DeleteMapping("/films/{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     public void deleteLikeFilm(
             @PathVariable("id") Long filmId,
             @PathVariable("userId") Long userId) {
         filmService.deleteLike(filmId, userId);
     }
 
+    @GetMapping("/search")
+    public List<Film> searchFilm(@RequestParam String query,
+                                 @RequestParam String by) {
+        return filmService.searchFilm(query, by);
+    }
+
+    @GetMapping("/common")
+    public List<Film> searchFilm(@RequestParam Long userId,
+                                 @RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/director/{id}")
+    public List<Film> getListFilmsByDirector(@PathVariable Long id,
+                                             @RequestParam String sortBy) {
+        List<Film> films = new ArrayList<>();
+        if (sortBy.equals("likes")) {
+            films = filmService.getFilmsByDirectorSortByLikes(id);
+        }
+        if (sortBy.equals("year")) {
+            films = filmService.getFilmsByDirectorSortByYear(id);
+        }
+
+        return films;
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUserById(
+            @PathVariable Long id) {
+        filmService.deleteUserById(id);
+    }
 }

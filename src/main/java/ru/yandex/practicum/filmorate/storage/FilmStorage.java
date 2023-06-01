@@ -8,15 +8,17 @@ public interface FilmStorage {
     //методы добавления, удаления и модификации объектов.
     Film addFilm(Film film);
 
-    Film updateFilm(long id, Film film);
+    Film updateFilm(Long id, Film film);
 
     List<Film> findAllFilms();
 
-    Film findFilmById(long id);
+    Film findFilmById(Long id);
 
-    List<Film> getPopularFilms(int count);
+    List<Film> getPopularFilms(Long limit);
 
-    void deleteLike(long filmId, long userId);
+    void deleteLike(Long filmId, Long userId);
 
-    void addLike(long filmId, long userId);
+    void addLike(Long filmId, Long userId);
+
+    void deleteFilmById(Long filmId);
 }
