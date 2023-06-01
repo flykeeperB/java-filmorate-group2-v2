@@ -2,9 +2,11 @@ package ru.yandex.practicum.filmorate.storage.database.events;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 
@@ -89,17 +91,32 @@ public class EventDbStorage implements EventStorage {
     }
 
     private Integer getIdType(String nameType) {
-        return jdbcTemplate.queryForObject(SQL_GET_TYPE_ID, Integer.class, nameType);
+        try {
+            return jdbcTemplate.queryForObject(SQL_GET_TYPE_ID, Integer.class, nameType);
+        } catch (DataIntegrityViolationException e) {
+            log.error(e.getMessage());
+            throw new StorageException("Ошибка при выполнении getIdType");
+        }
     }
 
     private Integer getIdOperation(String nameOperation) {
-        return jdbcTemplate.queryForObject(SQL_GET_OPERATION_ID, Integer.class, nameOperation);
+        try {
+            return jdbcTemplate.queryForObject(SQL_GET_OPERATION_ID, Integer.class, nameOperation);
+        } catch (DataIntegrityViolationException e) {
+            log.error(e.getMessage());
+            throw new StorageException("Ошибка при выполнении getIdOperation");
+        }
     }
 
     private void addEvent(String nameType, String nameOperation, Long firstId, Long secondId) {
         int type = getIdType(nameType);
         int opr = getIdOperation(nameOperation);
         LocalDateTime date = LocalDateTime.now();
-        jdbcTemplate.update(SQL_INSERT_EVENTS, date, firstId, type, opr, secondId);
+        try {
+            jdbcTemplate.update(SQL_INSERT_EVENTS, date, firstId, type, opr, secondId);
+        } catch (DataIntegrityViolationException e) {
+            log.error(e.getMessage());
+            throw new StorageException("Ошибка при добавлении записи о событии");
+        }
     }
 }
